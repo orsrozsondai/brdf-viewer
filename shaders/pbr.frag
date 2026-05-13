@@ -49,9 +49,17 @@ layout(set = 2, binding = 2) uniform sampler2D brdfLUT;
 const float PI = 3.1415926535;
 
 vec3 samplePrefilter(vec3 n, float roughness) {
-    float lod = roughness*roughness*11.0f + 0.3f;
-    lod = min(9, lod);
-    return textureLod(prefilter, n, lod).rgb;
+    float lod = roughness * 11.0f;
+    lod = min(9.0f, lod);
+    float lod0 = floor(lod);
+    float lod1 = min(lod0 + 1.0, 9.0f);
+    float t = fract(lod);
+
+    vec3 a = textureLod(prefilter, n, lod0).rgb;
+    vec3 b = textureLod(prefilter, n, lod1).rgb;
+
+    return mix(a, b, t);
+
 }
 vec3 F_schlick(vec3 v, vec3 h) {
     float vdoth = max(dot(v,h), 0.0);
