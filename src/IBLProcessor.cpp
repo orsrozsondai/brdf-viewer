@@ -125,7 +125,6 @@ void IBLProcessor::createHDRDescriptorPool() {
         throw std::runtime_error("Failed to create HDR descriptor pool!");
     }
 
-    std::cout << hdrDescriptorPool << std::endl;
 }
 
 void IBLProcessor::createHDRDescriptorSetLayout() {
@@ -236,7 +235,7 @@ void IBLProcessor::createEqToCubePipeline() {
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode             = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth               = 1.0f;
-    rasterizer.cullMode                = VK_CULL_MODE_NONE; // flip if cube appears inside-out
+    rasterizer.cullMode                = VK_CULL_MODE_NONE;
     rasterizer.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable         = VK_FALSE;
 
@@ -264,7 +263,7 @@ void IBLProcessor::createEqToCubePipeline() {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts    = &hdrDescriptorLayout; // for equirect sampler
+    pipelineLayoutInfo.pSetLayouts    = &hdrDescriptorLayout;
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &range;
 
@@ -486,48 +485,14 @@ VkPipeline IBLProcessor::createComputePipeline(const std::string& path) {
 }
 
 void IBLProcessor::createCubeSampler() {
-    VkSamplerCreateInfo ci{ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 
-    // Filtering (important for HDRI smoothness)
-    ci.magFilter = VK_FILTER_LINEAR;
-    ci.minFilter = VK_FILTER_LINEAR;
-
-    // Mipmap filtering (critical for prefilter map)
-    ci.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-
-    // Addressing mode (cubemap MUST use CLAMP_TO_EDGE)
-    ci.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    ci.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    ci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-
-    // No anisotropy for cubemaps (not useful here)
-    ci.anisotropyEnable = VK_FALSE;
-
-    // LOD control (important for IBL smoothness)
-    ci.minLod = 0.0f;
-    ci.maxLod = VK_LOD_CLAMP_NONE;
-    ci.mipLodBias = 0.0f;
-
-    // No comparison sampling
-    ci.compareEnable = VK_FALSE;
-    ci.compareOp = VK_COMPARE_OP_ALWAYS;
-
-    // Border color not used (since we clamp)
-    ci.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-
-    // Cubemap coordinates are normalized
-    ci.unnormalizedCoordinates = VK_FALSE;
-
-    VkResult result = vkCreateSampler(
+    cubeSampler = createSampler(
         context.device,
-        &ci,
-        nullptr,
-        &cubeSampler
+        VK_FILTER_LINEAR,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        0.0f,
+        false
     );
-
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create cube sampler!");
-    }
 
 }
 

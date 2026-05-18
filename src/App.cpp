@@ -51,6 +51,7 @@ void App::initGLFW(const char* appName, int width, int height) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     if (width <= 0 || height <= 0) {
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -442,12 +443,6 @@ void App::createSwapchain() {
     info.clipped = VK_TRUE;
     info.oldSwapchain = VK_NULL_HANDLE;
 
-    std::cout << "device: " << device << "\n";
-    std::cout << "surface: " << surface << "\n";
-    std::cout << "imageCount: " << imageCount << "\n";
-    std::cout << "format: " << info.imageFormat << "\n";
-    std::cout << "extent: " << info.imageExtent.width 
-          << "x" << info.imageExtent.height << "\n";
 
 
     if (vkCreateSwapchainKHR(device, &info, nullptr, &swapchain) != VK_SUCCESS) {
@@ -886,8 +881,7 @@ void App::destroy() {
 
 }
 void App::run() {
-
-    // auto starttime = std::chrono::high_resolution_clock::now();
+    glfwShowWindow(window);
     
     while (!glfwWindowShouldClose(window)) {
 
@@ -904,27 +898,6 @@ void App::run() {
 
         drawFrame();
     }
-
-   
-    //     // print framerate
-    //     static auto lastTime = std::chrono::high_resolution_clock::now();
-    //     static int frameCount = 0;
-            
-    //     frameCount++;
-            
-    //     auto now = std::chrono::high_resolution_clock::now();
-    //     float elapsed =
-    //         std::chrono::duration<float>(now - lastTime).count();
-            
-    //     if (elapsed >= 1.0f) {
-    //         float fps = frameCount / elapsed;
-    //         std::cout << "FPS: " << fps << std::endl;
-        
-    //         frameCount = 0;
-    //         lastTime = now;
-    //     }
-        
-    
 
 }
 
