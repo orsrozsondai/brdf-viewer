@@ -1,6 +1,5 @@
 #pragma once
 #include <glm/ext/vector_float3.hpp>
-#include <string>
 #include <vector>
 #include <memory>
 #include <vulkan/vulkan_core.h>
@@ -56,6 +55,7 @@ public:
     void cycleSelected(int dir); // -1 = left, 1 = right
     void setObjectCount(int c);
     void setObjectDistance(float d);
+    void applySettingsToAll();
     void interpolate(MaterialParameters param);
     bool isObjectInterpolated();
     void addEnvMap(EnvMap* pEnv);

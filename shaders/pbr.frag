@@ -67,11 +67,6 @@ vec3 F_schlick(vec3 v, vec3 h) {
     return F0 + (1.0 - F0) * pow(1.0 - vdoth, 5.0);
 }
 
-vec3 F_schlick_roughness(float ndotv, float roughness) {
-    vec3 F0 = mix(vec3(0.04), material.albedo, material.metallic);
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - ndotv, 5.0);
-}
-
 float G1(vec3 v) {
     float k = pow((material.roughness + 1), 2) / 8;
     float ndotv = max(dot(normalize(worldNormal), v), 0);
@@ -233,13 +228,10 @@ void main() {
     float ndotv = max(dot(normalize(worldNormal), v), 0.0);
     vec3 n = normalize(worldNormal);
     vec3 t = normalize(worldTangent);
-    t = normalize(cross(vec3(0,1,0), n));
     vec3 b = normalize(cross(n, t));
 
 
-    
-
-    vec3 color = scene.ambientLight * material.albedo * 0.1; 
+    vec3 color = vec3(0,0,0);
     
     if (scene.ibl) {
         float kD = 1.0 - material.metallic;
@@ -298,7 +290,6 @@ void main() {
 
             // CLEARCOAT
             float ccRoughness = 1-material.clearcoatGloss;
-            // vec3 prefilteredCC = textureLod(prefilter, R, ccRoughness * 11.0).rgb;
             vec3 prefilteredCC = samplePrefilter(R, ccRoughness);
             
             float Fc = pow(1.0 - ndotv, 5.0);
@@ -307,7 +298,7 @@ void main() {
             color += material.clearcoat * prefilteredCC * (Fcc * brdfcc.x + brdfcc.y);
 
             // SHEEN
-            vec3 sheenColor = mix(vec3(1.0), material.albedo, material.sheenTint);
+            vec3 sheenColor = mix(normalize(vec3(1.0)), material.albedo, material.sheenTint);
             if (length(sheenColor) == 0) sheenColor = vec3(1.0);
             sheenColor = normalize(sheenColor);
             color += material.sheen * sheenColor * Fc * texture(irradiance, n).rgb;
@@ -317,6 +308,7 @@ void main() {
 
     }
     else {
+        color = scene.ambientLight * material.albedo * 0.1; 
         vec3 kD = vec3(1.0) - F_schlick(v, h);
         kD *= (1.0 - material.metallic);
 

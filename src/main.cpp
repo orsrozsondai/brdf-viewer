@@ -17,9 +17,8 @@ int main() {
     auto skullMesh = std::make_unique<MeshLoader>("res/models/skull.obj", "Skull");
 
     auto sphereMesh = std::make_unique<MeshLoader>("res/models/sphere.obj", "Sphere");
-    
 
-    App app("PBR");
+    App app("BRDF viewer");
     
     Pipeline p = Pipeline(app.getRenderContext(), "object.vert","pbr.frag");
 

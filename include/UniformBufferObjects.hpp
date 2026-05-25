@@ -60,7 +60,7 @@ struct MaterialUBO {
             case SHEEN_TINT: return &sheenTint;
             case CLEARCOAT: return &clearcoat;
             case CLEARCOAT_GLOSS: return &clearcoatGloss;
-            default: throw std::invalid_argument({"Invalid parameter: " + param});
+            default: throw std::invalid_argument(&"Invalid parameter: " [ param]);
         }
     }
 

@@ -3,12 +3,16 @@
 #include "Vertex.hpp"
 #include "tiny_obj_loader.h"
 #include <cstdint>
+#include <glm/ext/vector_float3.hpp>
+#include <glm/geometric.hpp>
+#include <iostream>
 #include <stdexcept>
 #include <vector>
 
 MeshLoader::MeshLoader(const std::string& path, const std::string& name) : path(path) {
     this->name = name.empty()?path:name;
     loadOBJ();
+    std::cout << "Object loaded: " << path << std::endl;
 }
 MeshLoader::MeshLoader() {
 
@@ -68,7 +72,7 @@ void MeshLoader::loadOBJ() {
             }
 
             vertices.emplace_back(position, normal, glm::vec3(0.0f));
-            indices.push_back(static_cast<uint32_t>(indices.size()));
+            indices.push_back(indices.size());
         }
     }
 
@@ -83,14 +87,20 @@ void MeshLoader::computeTangents() {
         Vertex& v1 = vertices[indices[i + 1]];
         Vertex& v2 = vertices[indices[i + 2]];
 
-        glm::vec3 edge1 = v1.position - v0.position;
-        // glm::vec3 edge2 = v2.position - v0.position;
+        glm::vec3 n_lerp = glm::normalize(v0.normal + v1.normal + v2.normal);
 
-        glm::vec3 tangent = glm::normalize(edge1);
-
-        v0.tangent += tangent;
-        v1.tangent += tangent;
-        v2.tangent += tangent;
+        v0.tangent += glm::cross(
+            std::abs(v0.normal.y) == 1 ? n_lerp : v0.normal,
+            glm::vec3(0,1,0)
+        );
+        v1.tangent += glm::cross(
+            std::abs(v1.normal.y) == 1  ? n_lerp : v1.normal,
+            glm::vec3(0,1,0)
+        );
+        v2.tangent += glm::cross(
+            std::abs(v2.normal.y) == 1 ? n_lerp : v2.normal,
+            glm::vec3(0,1,0)
+        );
     }
 
     for (auto& v : vertices)

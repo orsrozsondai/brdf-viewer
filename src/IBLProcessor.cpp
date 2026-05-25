@@ -1,7 +1,6 @@
 #include "IBLProcessor.hpp"
 #include "RenderContext.hpp"
 #include "helpers.hpp"
-#include <cstddef>
 #include <cstdint>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -546,6 +545,7 @@ void IBLProcessor::updateComputeDS(VkDescriptorSet DS, VkImageView input, VkImag
 
 
 GPUImage IBLProcessor::createIrradianceMap() {
+    std::cout << "Creating irradiance map..." << std::endl;
     GPUImage irradianceMap;
     const uint32_t irradianceSize = 64;
     createImage(
@@ -636,6 +636,7 @@ GPUImage IBLProcessor::createIrradianceMap() {
 }
 
 GPUImage IBLProcessor::createPrefilterMap() {
+    std::cout << "Creating prefiltered map..." << std::endl;
     GPUImage prefilterMap;
     prefilterMap.mipLevels = floor(log2(faceSize)) + 1;
     createImage(
@@ -738,6 +739,7 @@ GPUImage IBLProcessor::createPrefilterMap() {
 }
 
 GPUImage IBLProcessor::createBRDFLUT() {
+    std::cout << "Creating BRDF lut..." << std::endl;
     const uint32_t lutSize = 512;
     GPUImage brdfLUT;
     createImage(

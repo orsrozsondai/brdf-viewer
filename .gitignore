@@ -1,8 +1,1 @@
-app
 build/
-imgui/*.o
-imgui/backends/*.o
-imgui/backends/vulkan/glsl_shader.frag.u32
-imgui/backends/vulkan/glsl_shader.vert.u32
-imgui/libimgui.a
-.vscode

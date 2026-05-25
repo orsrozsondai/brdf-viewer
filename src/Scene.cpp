@@ -242,6 +242,13 @@ void Scene::arrangeObjects() {
     }
 }
 
+void Scene::applySettingsToAll() {
+    MaterialUBO& current = *(objects[selectedObjectIndex]->ubo());
+    for (auto obj : objects) {
+        *(obj->ubo()) = current;
+    }
+}
+
 void Scene::setObjectDistance(float d) {
     objectDistance = d;
     arrangeObjects();

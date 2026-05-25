@@ -75,14 +75,14 @@ add_dependencies(imgui imgui_shaders)
 # ---- Main sources ----
 file(GLOB SRC_FILES src/*.cpp)
 
-add_executable(app ${SRC_FILES})
+add_executable(brdf-viewer ${SRC_FILES})
 
-target_include_directories(app PRIVATE
+target_include_directories(brdf-viewer PRIVATE
     include
     imgui
 )
 
-target_link_libraries(app PRIVATE
+target_link_libraries(brdf-viewer PRIVATE
     Vulkan::Vulkan
     glfw
     imgui
@@ -117,4 +117,4 @@ foreach(shader ${VERT_SHADERS} ${FRAG_SHADERS} ${COMP_SHADERS})
 endforeach()
 
 add_custom_target(shaders ALL DEPENDS ${SHADER_OUTPUTS})
-add_dependencies(app shaders)
+add_dependencies(brdf-viewer shaders)

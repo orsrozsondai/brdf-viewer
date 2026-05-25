@@ -1,5 +1,4 @@
 #include "App.hpp"
-#include "Pipeline.hpp"
 #include "Scene.hpp"
 #include "SettingsWindow.hpp"
 #include <GLFW/glfw3.h>
@@ -9,7 +8,6 @@
 #include <cstring>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
-#include <iterator>
 #include <ostream>
 #include <stdexcept>
 #include <sys/types.h>
