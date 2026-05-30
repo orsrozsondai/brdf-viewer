@@ -67,7 +67,7 @@ void main() {
     vec2 uv = (vec2(coord) + 0.5) / vec2(size);
     vec3 N = getDirection(face, uv);
 
-    const int SAMPLE_COUNT = 4096;
+    const int SAMPLE_COUNT = 16384;
 
     vec3 irradiance = vec3(0.0);
 
@@ -86,7 +86,7 @@ void main() {
     
         vec3 L = sampleHemisphere(N, Xi);
     
-        vec3 envColor = min(vec3(100000),texture(uEnvMap, L).rgb);
+        vec3 envColor = min(vec3(5),texture(uEnvMap, L).rgb);
 
         irradiance += envColor;
     }

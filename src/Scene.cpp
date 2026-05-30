@@ -174,7 +174,7 @@ void Scene::update() {
 }
 
 void Scene::draw(VkCommandBuffer cmd, VkExtent2D extent, size_t frameIndex) {
-    if (env) {
+    if (env && sceneUBO.ibl) {
         env->renderSkybox(cmd, extent, camera->view(), camera->proj());
     }
     pipeline->bind(cmd, extent);

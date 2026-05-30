@@ -76,7 +76,8 @@ void main() {
 
     
 
-    const uint SAMPLE_COUNT = 1024u;
+    int SAMPLE_COUNT = min(8192, int(pow(2.0, pc.mipLevel + 8)));
+    if (pc.mipLevel == 0) SAMPLE_COUNT = 1;
 
     vec3 prefiltered = vec3(0.0);
     float totalWeight = 0.0;
@@ -99,7 +100,7 @@ void main() {
         {
             vec3 color = texture(uEnvMap, L).rgb;
 
-            prefiltered += min(vec3(100000),color) * NdotL;
+            prefiltered += min(vec3(5),color) * NdotL;
             totalWeight += NdotL;
         }
     }

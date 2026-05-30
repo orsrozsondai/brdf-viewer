@@ -547,7 +547,7 @@ void IBLProcessor::updateComputeDS(VkDescriptorSet DS, VkImageView input, VkImag
 GPUImage IBLProcessor::createIrradianceMap() {
     std::cout << "Creating irradiance map..." << std::endl;
     GPUImage irradianceMap;
-    const uint32_t irradianceSize = 64;
+    const uint32_t irradianceSize = 32;
     createImage(
         context.device,
         context.physicalDevice,
@@ -595,11 +595,6 @@ GPUImage IBLProcessor::createIrradianceMap() {
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, irradiancePipeline);
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePL, 0, 1, &irradianceDS, 0, nullptr);
 
-    computePC pc{};
-    pc.roughness = 0.0f;
-    pc.faceSize = faceSize;
-
-    vkCmdPushConstants(cmd, computePL, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(computePC), &pc);
 
     vkCmdDispatch(cmd, (irradianceSize + 7) / 8, (irradianceSize + 7) / 8, 6); // 6 for cubemap
 
