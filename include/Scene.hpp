@@ -32,7 +32,6 @@ private:
 
     void createDescriptorSets();
     void updateDescriptorSets();
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void createUniformBuffers();
     void createObjects();
     void destroyObjects();
@@ -66,5 +65,4 @@ public:
     Camera* getCamera() {return camera;}
 
 
-    Object* addObject(std::unique_ptr<Object> obj);
 };

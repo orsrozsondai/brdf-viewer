@@ -9,7 +9,6 @@
 #include "RenderContext.hpp"
 #include <GLFW/glfw3.h>
 #include <cfloat>
-#include <cstdint>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
@@ -88,11 +87,6 @@ void SettingsWindow::initStyle() {
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.ItemSpacing.y = 1;
-
-    // float xscale, yscale;
-    // glfwGetWindowContentScale(context.window, &xscale, &yscale);
-    // float dpiScale = (xscale + yscale) * 0.5f;
-    // io->FontGlobalScale = dpiScale;
 }
 
 void SettingsWindow::draw(VkCommandBuffer cmd) {
@@ -319,10 +313,6 @@ void SettingsWindow::update() {
     ImGui::End();
 
     ImGui::Render();
-}
-
-void SettingsWindow::setControlledObject(Object* pObject) {
-    object = pObject;
 }
 
 SettingsWindow::~SettingsWindow() {

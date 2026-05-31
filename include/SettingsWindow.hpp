@@ -26,7 +26,6 @@ public:
     SettingsWindow(const RenderContext& context);
     void draw(VkCommandBuffer cmd);
     void update();
-    void setControlledObject(Object* pObject);
     void toggle();
     void setScene(Scene* pScene);
     ~SettingsWindow();
