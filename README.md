@@ -1,6 +1,7 @@
 
 # BRDF Viewer
 
+![demo](demo.gif) <br>
 A real-time BRDF (Bidirectional Reflectance Distribution Function) visualization tool built using Vulkan & GLFW.
 
 ### Features
