@@ -21,9 +21,13 @@ Scene::Scene(const RenderContext& context, Pipeline* pPipeline, Camera* pCamera)
     updateDescriptorSets();
 }
 
-void Scene::addMesh(std::unique_ptr<MeshLoader> mesh) {
+void Scene::addMesh(std::unique_ptr<MeshLoader> mesh, const std::vector<Texture*>& textures) {
     meshes.push_back(std::move(mesh));
     if (objects.empty()) createObjects();
+    for (Object* obj : objects)
+        for (Texture* texture : textures)
+            obj->addTexture(texture);
+    
 }
 
 void Scene::createDescriptorSets() {

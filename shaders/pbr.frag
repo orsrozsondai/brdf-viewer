@@ -9,6 +9,7 @@ layout(location = 0) out vec4 outColor;
 layout(constant_id = 0) const int BRDF = 0;
 
 layout(set = 0, binding = 1) uniform MaterialUBO {
+    bool textured;
     vec3 albedo;
     float metallic;
     float roughness;
@@ -18,6 +19,11 @@ layout(set = 0, binding = 1) uniform MaterialUBO {
     float clearcoat;
     float clearcoatGloss;    
 } material;
+
+layout(set = 0, binding = 2) uniform sampler2D tex;
+layout(set = 0, binding = 3) uniform sampler2D normalMap;
+layout(set = 0, binding = 4) uniform sampler2D roughnessMap;
+layout(set = 0, binding = 5) uniform sampler2D metallicMap;
 
 layout(set = 1, binding = 0) uniform SceneUBO {
     bool ibl;

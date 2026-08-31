@@ -4,6 +4,7 @@
 #include "MeshLoader.hpp"
 #include "Pipeline.hpp"
 #include "RenderContext.hpp"
+#include "Texture.hpp"
 #include "Vertex.hpp"
 #include "UniformBufferObjects.hpp"
 #include <cstddef>
@@ -36,6 +37,8 @@ private:
     std::vector<void*> fs_uniformBuffersMapped;
     std::vector<VkDescriptorSet> descriptorSets;
 
+    std::vector<Texture*> textures;
+
     MVP_UBO mvpUBO;
     MaterialUBO materialUBO;
 
@@ -54,6 +57,8 @@ private:
 
     void createDescriptorSets();
 
+    void updateDescriptorSets();
+
     void updateModelMat();
 
     public:
@@ -69,6 +74,7 @@ private:
     void update(const Camera& camera);
 
     MaterialUBO* ubo();
+    void addTexture(Texture* pTexture);
 
     void setScale(float scale);
     void setPosition(const glm::vec3& pos);

@@ -28,15 +28,23 @@ void Pipeline::createLayout() {
     materialUboLayoutBinding.descriptorCount = 1;
     materialUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     
+    VkDescriptorSetLayoutBinding textureLayoutBindings{};
+    textureLayoutBindings.binding = 2;
+    textureLayoutBindings.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    textureLayoutBindings.descriptorCount = 4;
+    textureLayoutBindings.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    
     VkDescriptorSetLayoutBinding sceneUboLayoutBinding{};
     sceneUboLayoutBinding.binding = 0;
     sceneUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     sceneUboLayoutBinding.descriptorCount = 1;
     sceneUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {
         vsUboLayoutBinding,
-        materialUboLayoutBinding
+        materialUboLayoutBinding,
+        textureLayoutBindings
     };
 
     std::array<VkDescriptorSetLayoutBinding, 3> iblBindings;

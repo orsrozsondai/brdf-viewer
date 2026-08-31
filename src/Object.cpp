@@ -2,6 +2,7 @@
 #include "MeshLoader.hpp"
 #include "Pipeline.hpp"
 #include "RenderContext.hpp"
+#include "Texture.hpp"
 #include "UniformBufferObjects.hpp"
 #include "helpers.hpp"
 #include <cstdint>
@@ -24,6 +25,7 @@ Object::Object(const RenderContext& context, Pipeline* pipeline, MeshLoader* pMe
     uploadIndices();
     createUniformBuffers();
     createDescriptorSets();
+    updateDescriptorSets();
     updateModelMat();
 }
 
@@ -248,6 +250,10 @@ MaterialUBO* Object::ubo() {
     return &materialUBO;
 }
 
+void Object::addTexture(Texture* pTexture) {
+    textures.push_back(pTexture);
+}
+
 void Object::createDescriptorSets() {
     std::vector<VkDescriptorSetLayout> layouts(
         context.imageCount,
@@ -267,7 +273,13 @@ void Object::createDescriptorSets() {
         &allocInfo,
         descriptorSets.data()
     );
+}
 
+void Object::updateDescriptorSets() {
+    std::vector<VkDescriptorImageInfo> imageInfos;
+    for (Texture* texture : textures) {
+        imageInfos.push_back(texture->descriptorInfo());
+    }
     for (size_t i = 0; i < context.imageCount; i++)
     {
         VkDescriptorBufferInfo vsBufferInfo{};
@@ -280,7 +292,9 @@ void Object::createDescriptorSets() {
         fsBufferInfo.offset = 0;
         fsBufferInfo.range  = sizeof(MaterialUBO);
 
-        std::array<VkWriteDescriptorSet, 2> writes{};
+        uint writeCount = imageInfos.empty() ? 2 : 3;
+
+        std::vector<VkWriteDescriptorSet> writes{writeCount};
         writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         writes[0].dstSet = descriptorSets[i];
         writes[0].dstBinding = 0; 
@@ -294,6 +308,16 @@ void Object::createDescriptorSets() {
         writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         writes[1].descriptorCount = 1;
         writes[1].pBufferInfo = &fsBufferInfo;
+
+        // textures
+        if (!imageInfos.empty()) {
+            writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[2].dstSet = descriptorSets[i];
+            writes[2].dstBinding = 2;
+            writes[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            writes[2].descriptorCount = imageInfos.size();
+            writes[2].pImageInfo = imageInfos.empty() ? nullptr : imageInfos.data();
+        }
 
         vkUpdateDescriptorSets(
             context.device,

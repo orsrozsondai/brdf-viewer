@@ -8,15 +8,7 @@
 
 
 class EnvMap {
-private:
-    struct ImageInfo {
-        float* data = nullptr;
-        int width = 0;
-        int height = 0;
-        int channels = 0;
-    };
-    
-
+private: 
     RenderContext context;
     std::string filePath;
 

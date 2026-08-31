@@ -31,6 +31,7 @@ enum BRDFFlags {
 typedef uint32_t BRDF;
 
 struct MaterialUBO {
+    int textured;
     alignas(16) glm::vec3 albedo;
     float metallic;
     float roughness;
@@ -42,6 +43,7 @@ struct MaterialUBO {
 
 
     MaterialUBO() {
+        textured = 0;
         albedo = {0,0,0};
         metallic = 0;
         roughness = 0;

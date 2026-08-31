@@ -799,21 +799,21 @@ void App::createSyncObjects() {
 void App::createDescriptorPool() {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = imageCount * MAX_OBJECT_COUNT * 4 + imageCount;
+    poolSizes[0].descriptorCount = imageCount * MAX_OBJECT_COUNT * 8 + imageCount;
 
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 3;
+    poolSizes[1].descriptorCount = imageCount * MAX_OBJECT_COUNT * 8 + imageCount;
 
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = poolSizes.size();
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = imageCount * MAX_OBJECT_COUNT*2 + imageCount;
+    poolInfo.maxSets = imageCount * MAX_OBJECT_COUNT*8 + imageCount;
     poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to creater descriptor pool!");
+        throw std::runtime_error("failed to create descriptor pool!");
     }
 }
 

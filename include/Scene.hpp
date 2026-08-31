@@ -44,7 +44,7 @@ public:
 
     void update();
     void draw(VkCommandBuffer cmd, VkExtent2D extent, size_t frameIndex);
-    void addMesh(std::unique_ptr<MeshLoader> mesh);
+    void addMesh(std::unique_ptr<MeshLoader> mesh, const std::vector<Texture*>& textures = {});
     void setMeshIndex(int index);
     const std::vector<const char*> getMeshNames() const;
     Pipeline* getPipeline() const;

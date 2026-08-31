@@ -4,6 +4,7 @@
 #include "MeshLoader.hpp"
 #include "Pipeline.hpp"
 #include "Scene.hpp"
+#include "Texture.hpp"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include <memory>
@@ -19,7 +20,10 @@ int main() {
     auto sphereMesh = std::make_unique<MeshLoader>("res/models/sphere.obj", "Sphere");
 
     App app("BRDF viewer");
-    
+
+    auto texture = Texture(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_rough_1k.jpg", Texture::ROUGHNESS_MAP);
+    std::vector<Texture*> texvec;
+    texvec.push_back(&texture);
     Pipeline p = Pipeline(app.getRenderContext(), "object.vert","pbr.frag");
 
     EnvMap env(app.getRenderContext(), "res/envmaps/rural_evening_road_4k.hdr", p.getDescriptorSetLayouts()[2]);
@@ -35,7 +39,7 @@ int main() {
         45.0f
     );
     Scene scene(app.getRenderContext(), &p, &camera);
-    scene.addMesh(std::move(sphereMesh));
+    scene.addMesh(std::move(sphereMesh), texvec);
     scene.addMesh(std::move(skullMesh));
     scene.addEnvMap(&env);
 

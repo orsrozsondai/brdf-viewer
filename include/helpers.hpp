@@ -14,6 +14,13 @@ struct GPUImage {
     void destroy(VkDevice device);
 };
 
+struct ImageInfo {
+    float* data = nullptr;
+    int width = 0;
+    int height = 0;
+    int channels = 0;
+};
+
 void copyBuffer(
     VkDevice device,
     VkCommandPool commandPool,

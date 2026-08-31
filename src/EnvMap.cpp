@@ -18,7 +18,7 @@ EnvMap::EnvMap(const RenderContext& context, VkDescriptorSetLayout DSL) : contex
     init();
 }
 
-EnvMap::ImageInfo EnvMap::loadImage() {
+ImageInfo EnvMap::loadImage() {
     ImageInfo res;
 
     if (filePath.empty()) {
@@ -35,7 +35,7 @@ EnvMap::ImageInfo EnvMap::loadImage() {
     return res;
 }
 
-EnvMap::ImageInfo EnvMap::generateEnv() {
+ImageInfo EnvMap::generateEnv() {
 
     ImageInfo img;
     img.width = 4096;
