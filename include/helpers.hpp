@@ -4,6 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
+#include "stb_image.h"
 
 struct GPUImage {
     VkImage image = VK_NULL_HANDLE;
@@ -14,8 +15,9 @@ struct GPUImage {
     void destroy(VkDevice device);
 };
 
+template<typename Pixel>
 struct ImageInfo {
-    float* data = nullptr;
+    Pixel* data = nullptr;
     int width = 0;
     int height = 0;
     int channels = 0;

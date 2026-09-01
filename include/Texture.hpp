@@ -1,16 +1,12 @@
 #pragma once
 
 #include "RenderContext.hpp"
+#include "UniformBufferObjects.hpp"
 #include "helpers.hpp"
 #include <vulkan/vulkan_core.h>
 class Texture {
 public:
-    enum Type {
-        ALBEDO,
-        NORMAL_MAP,
-        ROUGHNESS_MAP,
-        METALLIC_MAP
-    };
+    using Type = TextureFlags;
 private:
     RenderContext context;
     GPUImage image;
@@ -19,7 +15,7 @@ private:
     VkSampler sampler = VK_NULL_HANDLE;
     Type type;
 
-    ImageInfo loadImage();
+    ImageInfo<stbi_uc> loadImage();
     void create();
 
 

@@ -203,6 +203,9 @@ void Object::destroy(){
         );
         descriptorSets[0] = VK_NULL_HANDLE;
     }
+    for (Texture* texture : textures) {
+        texture->destroy();
+    }
 }
 
 void Object::createUniformBuffers() {
@@ -252,6 +255,7 @@ MaterialUBO* Object::ubo() {
 
 void Object::addTexture(Texture* pTexture) {
     textures.push_back(pTexture);
+    updateDescriptorSets();
 }
 
 void Object::createDescriptorSets() {
@@ -316,7 +320,7 @@ void Object::updateDescriptorSets() {
             writes[2].dstBinding = 2;
             writes[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             writes[2].descriptorCount = imageInfos.size();
-            writes[2].pImageInfo = imageInfos.empty() ? nullptr : imageInfos.data();
+            writes[2].pImageInfo = imageInfos.data();
         }
 
         vkUpdateDescriptorSets(

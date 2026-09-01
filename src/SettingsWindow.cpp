@@ -123,6 +123,8 @@ void SettingsWindow::update() {
     bool interpolatedObject = scene->isObjectInterpolated();
     static int objc = 3;
     static float objd = 2;
+    static bool textures[TEXTURE_TYPE_COUNT] = {false, false, false, false};
+    static const char* textureNames[TEXTURE_TYPE_COUNT] = {"Texture", "Normal map", "Roughness map", "Metallic map"};
     static const char* lightTypes[] = {"directional", "positional"};
     static int type = (int)sceneUBO->lightPos.w;
     static glm::vec2 lightDir(0,0);
@@ -149,6 +151,13 @@ void SettingsWindow::update() {
     ImGui::Text("Object distance:");
     if (ImGui::SliderFloat("##obj_dist", &objd, 1.f, 10.f)) {
         scene->setObjectDistance(objd);
+    }
+    for (int i = 0; i < TEXTURE_TYPE_COUNT; ++i) {
+        if (ImGui::Checkbox(textureNames[i], &textures[i])) {
+            sceneUBO->textures = 0;
+            for (int texIdx = 0; texIdx < TEXTURE_TYPE_COUNT; ++texIdx)
+                if (textures[texIdx]) sceneUBO->textures += 1 << texIdx;
+        }
     }
     ImGui::Text("Camera FOV:");
     if (ImGui::SliderInt("##fov", &cameraFov, 30, 90)) {

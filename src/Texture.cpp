@@ -1,5 +1,6 @@
 #include "Texture.hpp"
 #include "RenderContext.hpp"
+#include "UniformBufferObjects.hpp"
 #include "helpers.hpp"
 #include <iostream>
 #include <stdexcept>
@@ -13,19 +14,27 @@ Texture::Texture(const RenderContext& context, const std::string& path, Type typ
     
 }
 
-ImageInfo Texture::loadImage() {
-    ImageInfo res;
+ImageInfo<stbi_uc> Texture::loadImage() {
+    ImageInfo<stbi_uc> res;
 
     if (path.empty()) {
         throw std::runtime_error("File path is empty");
     }
     if (path.ends_with(".jpg") || path.ends_with(".png")) {
-        res.data = stbi_loadf(path.c_str(), &res.width, &res.height, &res.channels,0);
-        
+        int desiredChannels = 0;
+        switch (type) {
+            case TEXTURE_ALBEDO: desiredChannels = STBI_rgb_alpha; break;
+            case TEXTURE_NORMAL_MAP: desiredChannels = STBI_rgb_alpha; break;
+            case TEXTURE_ROUGHNESS_MAP: desiredChannels = STBI_grey; break;
+            case TEXTURE_METALLIC_MAP: desiredChannels = STBI_grey; break;
+            default: break;
+        }
+        stbi_set_flip_vertically_on_load(true);
+        res.data = stbi_load(path.c_str(), &res.width, &res.height, &res.channels,desiredChannels);
+        stbi_set_flip_vertically_on_load(false);
         switch (res.channels) {
-            case 1: format = VK_FORMAT_R32_SFLOAT; break;
-            case 2: format = VK_FORMAT_R32G32_SFLOAT; break;
-            case 3: format = VK_FORMAT_R32G32B32_SFLOAT; break;
+            case 1: format = VK_FORMAT_R8_UNORM; break;
+            default: format = VK_FORMAT_R8G8B8A8_SRGB; res.channels = 4; break;
         }
         if (res.data)
             std::cout << "Image loaded: " << res.width << " x " << res.height << ", " << res.channels << std::endl;
@@ -35,16 +44,14 @@ ImageInfo Texture::loadImage() {
     else {
         throw std::runtime_error("Not supported image format");
     }
-
+    
     return res;
 }
 
 void Texture::create() {
 
     ImageInfo info = loadImage();
-    VkDeviceSize imageSize = info.width * info.height * info.channels * sizeof(float);
-    std::cout << imageSize << "  " << format<<  std::endl;
-    
+    VkDeviceSize imageSize = info.width * info.height * info.channels * sizeof(stbi_uc);
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingMemory;
@@ -130,7 +137,7 @@ void Texture::create() {
 
     //sampler
 
-    sampler = createSampler(context.device, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 0, false);
+    sampler = createSampler(context.device, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, 0, false);
 }
 
 VkDescriptorImageInfo Texture::descriptorInfo() const {
@@ -145,5 +152,7 @@ VkDescriptorImageInfo Texture::descriptorInfo() const {
 void Texture::destroy() {
     vkDeviceWaitIdle(context.device);
     image.destroy(context.device);
-    vkDestroySampler(context.device, sampler, nullptr);
+    if (sampler != VK_NULL_HANDLE)
+        vkDestroySampler(context.device, sampler, nullptr);
+    sampler = VK_NULL_HANDLE;
 }

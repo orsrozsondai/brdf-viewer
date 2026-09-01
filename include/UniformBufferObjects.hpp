@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
@@ -30,8 +31,16 @@ enum BRDFFlags {
 
 typedef uint32_t BRDF;
 
+#define TEXTURE_TYPE_COUNT 4
+
+enum TextureFlags {
+    TEXTURE_ALBEDO              = 1 << 0,
+    TEXTURE_NORMAL_MAP          = 1 << 1,
+    TEXTURE_ROUGHNESS_MAP       = 1 << 2,
+    TEXTURE_METALLIC_MAP        = 1 << 3
+};
+
 struct MaterialUBO {
-    int textured;
     alignas(16) glm::vec3 albedo;
     float metallic;
     float roughness;
@@ -43,7 +52,6 @@ struct MaterialUBO {
 
 
     MaterialUBO() {
-        textured = 0;
         albedo = {0,0,0};
         metallic = 0;
         roughness = 0;
@@ -77,6 +85,9 @@ struct SceneUBO {
     alignas(16) glm::vec3 camPos;
     int toneMapping;
     float exposure;
+
+    uint32_t textures;
+    
     BRDF brdf;
 
     SceneUBO() {
@@ -88,6 +99,7 @@ struct SceneUBO {
         toneMapping = 1;
         exposure = 1;
         brdf = 0;
+        textures = 0;
     }
 };
 

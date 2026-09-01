@@ -70,8 +70,17 @@ void MeshLoader::loadOBJ() {
                     attrib.normals[3 * index.normal_index + 2]
                 );
             }
+            glm::vec2 uv{0.0f};
 
-            vertices.emplace_back(position, normal, glm::vec3(0.0f));
+            if (index.texcoord_index >= 0)
+            {
+                uv = glm::vec2{
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    attrib.texcoords[2 * index.texcoord_index + 1]
+                };
+            }
+
+            vertices.emplace_back(position, normal, uv, glm::vec3(0.0f));
             indices.push_back(indices.size());
         }
     }
@@ -80,33 +89,63 @@ void MeshLoader::loadOBJ() {
 
 }
 
-void MeshLoader::computeTangents() {
+void MeshLoader::computeTangents()
+{
+    for (auto& v : vertices)
+        v.tangent = glm::vec3(0.0f);
+
     for (size_t i = 0; i < indices.size(); i += 3)
     {
         Vertex& v0 = vertices[indices[i + 0]];
         Vertex& v1 = vertices[indices[i + 1]];
         Vertex& v2 = vertices[indices[i + 2]];
 
-        glm::vec3 n_lerp = glm::normalize(v0.normal + v1.normal + v2.normal);
+        glm::vec3 edge1 = v1.position - v0.position;
+        glm::vec3 edge2 = v2.position - v0.position;
 
-        v0.tangent += glm::cross(
-            std::abs(v0.normal.y) == 1 ? n_lerp : v0.normal,
-            glm::vec3(0,1,0)
+        glm::vec2 deltaUV1 = v1.uv - v0.uv;
+        glm::vec2 deltaUV2 = v2.uv - v0.uv;
+
+        float determinant =
+            deltaUV1.x * deltaUV2.y -
+            deltaUV2.x * deltaUV1.y;
+
+        if (std::abs(determinant) < 1e-6f)
+            continue;
+
+        float f = 1.0f / determinant;
+
+        glm::vec3 tangent;
+
+        tangent.x = f * (
+            deltaUV2.y * edge1.x -
+            deltaUV1.y * edge2.x
         );
-        v1.tangent += glm::cross(
-            std::abs(v1.normal.y) == 1  ? n_lerp : v1.normal,
-            glm::vec3(0,1,0)
+
+        tangent.y = f * (
+            deltaUV2.y * edge1.y -
+            deltaUV1.y * edge2.y
         );
-        v2.tangent += glm::cross(
-            std::abs(v2.normal.y) == 1 ? n_lerp : v2.normal,
-            glm::vec3(0,1,0)
+
+        tangent.z = f * (
+            deltaUV2.y * edge1.z -
+            deltaUV1.y * edge2.z
         );
+
+        v0.tangent += tangent;
+        v1.tangent += tangent;
+        v2.tangent += tangent;
     }
 
     for (auto& v : vertices)
-        v.tangent = glm::normalize(v.tangent);
-}
+    {
+        glm::vec3 n = glm::normalize(v.normal);
 
+        v.tangent = glm::normalize(
+            v.tangent - n * glm::dot(n, v.tangent)
+        );
+    }
+}
 const std::vector<Vertex>& MeshLoader::getVertices() const {
     return vertices;
 }

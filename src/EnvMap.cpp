@@ -18,8 +18,8 @@ EnvMap::EnvMap(const RenderContext& context, VkDescriptorSetLayout DSL) : contex
     init();
 }
 
-ImageInfo EnvMap::loadImage() {
-    ImageInfo res;
+ImageInfo<float> EnvMap::loadImage() {
+    ImageInfo<float> res;
 
     if (filePath.empty()) {
         res = generateEnv();
@@ -35,9 +35,9 @@ ImageInfo EnvMap::loadImage() {
     return res;
 }
 
-ImageInfo EnvMap::generateEnv() {
+ImageInfo<float> EnvMap::generateEnv() {
 
-    ImageInfo img;
+    ImageInfo<float> img;
     img.width = 4096;
     img.height = 2048;
     img.channels = 4; // RGBA

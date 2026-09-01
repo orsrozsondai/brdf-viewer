@@ -36,7 +36,7 @@ private:
 
     // Metadata
     void init();
-    ImageInfo loadImage();
+    ImageInfo<float> loadImage();
     void createHDRImage();
     void createSamplers();
     void createDescriptorSet();
@@ -44,7 +44,7 @@ private:
     void createSkyboxDescriptorSetLayout();
     void createSkyboxPipeline();
     void createSkyboxDescriptor();
-    ImageInfo generateEnv();
+    ImageInfo<float> generateEnv();
 
 public:
     EnvMap(const RenderContext& context, const std::string& path, VkDescriptorSetLayout DSL);

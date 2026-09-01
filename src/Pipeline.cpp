@@ -2,6 +2,7 @@
 #include "UniformBufferObjects.hpp"
 #include "Vertex.hpp"
 #include "helpers.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <array>
 #include <glm/ext/vector_float3.hpp>
@@ -28,11 +29,29 @@ void Pipeline::createLayout() {
     materialUboLayoutBinding.descriptorCount = 1;
     materialUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     
-    VkDescriptorSetLayoutBinding textureLayoutBindings{};
-    textureLayoutBindings.binding = 2;
-    textureLayoutBindings.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    textureLayoutBindings.descriptorCount = 4;
-    textureLayoutBindings.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    VkDescriptorSetLayoutBinding textureLayoutBinding{};
+    textureLayoutBinding.binding = 2;
+    textureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    textureLayoutBinding.descriptorCount = 1;
+    textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorSetLayoutBinding normalMapLayoutBinding{};
+    normalMapLayoutBinding.binding = 3;
+    normalMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalMapLayoutBinding.descriptorCount = 1;
+    normalMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorSetLayoutBinding roughnessMapLayoutBinding{};
+    roughnessMapLayoutBinding.binding = 4;
+    roughnessMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    roughnessMapLayoutBinding.descriptorCount = 1;
+    roughnessMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorSetLayoutBinding metallicMapLayoutBinding{};
+    metallicMapLayoutBinding.binding = 5;
+    metallicMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    metallicMapLayoutBinding.descriptorCount = 1;
+    metallicMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
     
     VkDescriptorSetLayoutBinding sceneUboLayoutBinding{};
@@ -41,10 +60,13 @@ void Pipeline::createLayout() {
     sceneUboLayoutBinding.descriptorCount = 1;
     sceneUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {
+    std::array<VkDescriptorSetLayoutBinding, 6> bindings = {
         vsUboLayoutBinding,
         materialUboLayoutBinding,
-        textureLayoutBindings
+        textureLayoutBinding,
+        normalMapLayoutBinding,
+        roughnessMapLayoutBinding,
+        metallicMapLayoutBinding
     };
 
     std::array<VkDescriptorSetLayoutBinding, 3> iblBindings;
@@ -141,7 +163,7 @@ void Pipeline::create(BRDF brdf) {
     binding.stride = sizeof(Vertex); 
     binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    std::array<VkVertexInputAttributeDescription, 3> attributes{};
+    std::array<VkVertexInputAttributeDescription, 4> attributes{};
 
     // POSITION
     attributes[0].binding = 0;
@@ -155,11 +177,17 @@ void Pipeline::create(BRDF brdf) {
     attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributes[1].offset = offsetof(Vertex, normal);
 
-    // TANGENT
+    // UV
     attributes[2].binding = 0;
     attributes[2].location = 2;
-    attributes[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributes[2].offset = offsetof(Vertex, tangent);
+    attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributes[2].offset = offsetof(Vertex, uv);
+
+    // TANGENT
+    attributes[3].binding = 0;
+    attributes[3].location = 3;
+    attributes[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributes[3].offset = offsetof(Vertex, tangent);
 
 
     VkPipelineVertexInputStateCreateInfo vertexInput{};
