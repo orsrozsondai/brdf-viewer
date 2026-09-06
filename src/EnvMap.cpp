@@ -11,33 +11,26 @@
 #include "stb_image.h"
 #include <iostream>
 
-EnvMap::EnvMap(const RenderContext& context, const std::string& path, VkDescriptorSetLayout DSL) : context(context), filePath(path), DSL(DSL) {
+EnvMap::EnvMap(const RenderContext& context, const std::filesystem::path& path, VkDescriptorSetLayout DSL) : context(context), filePath(path), DSL(DSL) {
     init();
 }
 EnvMap::EnvMap(const RenderContext& context, VkDescriptorSetLayout DSL) : context(context), filePath(""), DSL(DSL) {
     init();
 }
 
-ImageInfo<float> EnvMap::loadImage() {
-    ImageInfo<float> res;
+ImageData<float> EnvMap::loadImage() {
 
     if (filePath.empty()) {
-        res = generateEnv();
-        std::cout << "Image generated: " << res.width << " x " << res.height << std::endl;
+        return generateEnv();
     }
     else {
-        res.data = stbi_loadf(filePath.c_str(), &res.width, &res.height, &res.channels, STBI_rgb_alpha);
-        if (res.data)
-            std::cout << "Image loaded: " << res.width << " x " << res.height << std::endl;
-        else
-            throw std::runtime_error("Failed to load image: " + filePath);
+        return ImageData<float>(filePath, 4);
     }
-    return res;
 }
 
-ImageInfo<float> EnvMap::generateEnv() {
+ImageData<float> EnvMap::generateEnv() {
 
-    ImageInfo<float> img;
+    ImageData<float> img;
     img.width = 4096;
     img.height = 2048;
     img.channels = 4; // RGBA
@@ -135,6 +128,8 @@ ImageInfo<float> EnvMap::generateEnv() {
             img.data[idx + 3] = 1.0f;
         }
     }
+    
+    std::cout << "Image generated: " << img.width << " x " << img.height << std::endl;
 
     return img;
 
@@ -159,7 +154,7 @@ void EnvMap::init() {
 
 void EnvMap::createHDRImage() {
 
-    ImageInfo image = loadImage();
+    auto image = loadImage();
     VkDeviceSize imageSize = image.width * image.height * 4 * sizeof(float);
 
     VkBuffer stagingBuffer;
@@ -242,7 +237,6 @@ void EnvMap::createHDRImage() {
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
     vkFreeMemory(context.device, stagingMemory, nullptr);
 
-    stbi_image_free(image.data);
 }
 
 void EnvMap::createSamplers() {

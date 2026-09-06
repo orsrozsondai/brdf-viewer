@@ -5,16 +5,12 @@
 #include "Pipeline.hpp"
 #include "RenderContext.hpp"
 #include "Texture.hpp"
-#include "Vertex.hpp"
 #include "UniformBufferObjects.hpp"
 #include <cstddef>
-#include <cstdint>
 #include <cstring>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
-#include <iostream>
-#include <iomanip>
-#include <string>
+#include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
@@ -37,7 +33,7 @@ private:
     std::vector<void*> fs_uniformBuffersMapped;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    std::vector<Texture*> textures;
+    std::vector<std::shared_ptr<Texture>> textures;
 
     MVP_UBO mvpUBO;
     MaterialUBO materialUBO;
@@ -74,7 +70,7 @@ private:
     void update(const Camera& camera);
 
     MaterialUBO* ubo();
-    void addTexture(Texture* pTexture);
+    void addTexture(std::shared_ptr<Texture> pTexture);
 
     void setScale(float scale);
     void setPosition(const glm::vec3& pos);

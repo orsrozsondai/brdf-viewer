@@ -11,7 +11,7 @@
 #include <vulkan/vulkan_core.h>
 
 
-Pipeline::Pipeline(const RenderContext& context, const std::string& vert, const std::string&frag) : context(context), vert(vert), frag(frag) {
+Pipeline::Pipeline(const RenderContext& context, const std::filesystem::path& vert, const std::filesystem::path& frag) : context(context), vert(vert), frag(frag) {
     createLayout();
     create();
 }
@@ -125,8 +125,8 @@ void Pipeline::createLayout() {
 }
 
 void Pipeline::create(BRDF brdf) {
-    auto vertCode = readFile("build/shaders/" + vert + ".spv");
-    auto fragCode = readFile("build/shaders/" + frag + ".spv");
+    auto vertCode = readFile("build/shaders/" + vert.string() + ".spv");
+    auto fragCode = readFile("build/shaders/" + frag.string() + ".spv");
 
     VkShaderModule vertModule = createShaderModule(context.device, vertCode);
     VkShaderModule fragModule = createShaderModule(context.device, fragCode);

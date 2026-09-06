@@ -1,6 +1,7 @@
 #pragma once
 #include "RenderContext.hpp"
 #include "UniformBufferObjects.hpp"
+#include <filesystem>
 #include <vulkan/vulkan_core.h>
 #include <string>
 #include <vector>
@@ -9,7 +10,7 @@ class Pipeline {
 
 private: 
     RenderContext context;
-    std::string vert, frag;
+    std::filesystem::path vert, frag;
 
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
@@ -21,7 +22,7 @@ private:
 
 public:
 
-    Pipeline(const RenderContext& context, const std::string& vert, const std::string&frag);
+    Pipeline(const RenderContext& context, const std::filesystem::path& vert, const std::filesystem::path&frag);
 
     const std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() const { return descriptorSetLayouts;}
 

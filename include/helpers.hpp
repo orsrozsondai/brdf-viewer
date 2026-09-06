@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <filesystem>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
@@ -16,11 +18,16 @@ struct GPUImage {
 };
 
 template<typename Pixel>
-struct ImageInfo {
+struct ImageData {
     Pixel* data = nullptr;
     int width = 0;
     int height = 0;
     int channels = 0;
+    std::filesystem::path path;
+
+    ImageData() {};
+    ImageData(const std::filesystem::path& path, int channels, bool flip = false);
+    ~ImageData();
 };
 
 void copyBuffer(
@@ -100,7 +107,7 @@ void transitionImageLayout(
     uint32_t layerCount = 1
 );
 
-std::vector<char> readFile(const std::string& path);
+std::vector<char> readFile(const std::filesystem::path& path);
 
 VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code); 
 

@@ -9,8 +9,8 @@
 #include <stdexcept>
 #include <vector>
 
-MeshLoader::MeshLoader(const std::string& path, const std::string& name) : path(path) {
-    this->name = name.empty()?path:name;
+MeshLoader::MeshLoader(const std::filesystem::path& path, const std::string& name) : path(path) {
+    this->name = name.empty()?path.filename().string():name;
     loadOBJ();
     std::cout << "Object loaded: " << path << std::endl;
 }

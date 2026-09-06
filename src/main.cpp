@@ -24,11 +24,11 @@ int main() {
 
     App app("BRDF viewer");
 
-    std::vector<Texture*> grenadeTex;
-    grenadeTex.push_back(new Texture(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_diff_1k.jpg", TEXTURE_ALBEDO));
-    grenadeTex.push_back(new Texture(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_nor_dx_1k.jpg", TEXTURE_NORMAL_MAP));
-    grenadeTex.push_back(new Texture(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_rough_1k.jpg", TEXTURE_ROUGHNESS_MAP));
-    grenadeTex.push_back(new Texture(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_metal_1k.jpg", TEXTURE_METALLIC_MAP));
+    std::vector<std::shared_ptr<Texture>> grenadeTex;
+    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_diff_1k.jpg", TEXTURE_ALBEDO));
+    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_nor_gl_1k.jpg", TEXTURE_NORMAL_MAP));
+    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_rough_1k.jpg", TEXTURE_ROUGHNESS_MAP));
+    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_metal_1k.jpg", TEXTURE_METALLIC_MAP));
    
     Pipeline p = Pipeline(app.getRenderContext(), "object.vert","pbr.frag");
 
@@ -58,6 +58,5 @@ int main() {
     app.run();
    
     app.destroy();
-    for (Texture* tex : grenadeTex) delete tex;
     return EXIT_SUCCESS;
 }

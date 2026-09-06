@@ -1,6 +1,5 @@
 #pragma once
 #include "RenderContext.hpp"
-#include <string>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #include "helpers.hpp"
@@ -10,7 +9,7 @@
 class EnvMap {
 private: 
     RenderContext context;
-    std::string filePath;
+    std::filesystem::path filePath;
 
     // Images
     GPUImage hdrImage;
@@ -36,7 +35,7 @@ private:
 
     // Metadata
     void init();
-    ImageInfo<float> loadImage();
+    ImageData<float> loadImage();
     void createHDRImage();
     void createSamplers();
     void createDescriptorSet();
@@ -44,10 +43,10 @@ private:
     void createSkyboxDescriptorSetLayout();
     void createSkyboxPipeline();
     void createSkyboxDescriptor();
-    ImageInfo<float> generateEnv();
+    ImageData<float> generateEnv();
 
 public:
-    EnvMap(const RenderContext& context, const std::string& path, VkDescriptorSetLayout DSL);
+    EnvMap(const RenderContext& context, const std::filesystem::path& path, VkDescriptorSetLayout DSL);
     EnvMap(const RenderContext& context, VkDescriptorSetLayout DSL); // use generated image
     void renderSkybox(VkCommandBuffer cmd, VkExtent2D extent, glm::mat4 view, glm::mat4 proj);
     void bindDescriptorSet(VkCommandBuffer cmd, VkPipelineLayout pl);

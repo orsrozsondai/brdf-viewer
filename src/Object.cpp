@@ -10,6 +10,7 @@
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float4.hpp>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 #include <array>
@@ -203,7 +204,7 @@ void Object::destroy(){
         );
         descriptorSets[0] = VK_NULL_HANDLE;
     }
-    for (Texture* texture : textures) {
+    for (auto texture : textures) {
         texture->destroy();
     }
 }
@@ -253,7 +254,7 @@ MaterialUBO* Object::ubo() {
     return &materialUBO;
 }
 
-void Object::addTexture(Texture* pTexture) {
+void Object::addTexture(std::shared_ptr<Texture> pTexture) {
     textures.push_back(pTexture);
     updateDescriptorSets();
 }
@@ -281,7 +282,7 @@ void Object::createDescriptorSets() {
 
 void Object::updateDescriptorSets() {
     std::vector<VkDescriptorImageInfo> imageInfos;
-    for (Texture* texture : textures) {
+    for (auto texture : textures) {
         imageInfos.push_back(texture->descriptorInfo());
     }
     for (size_t i = 0; i < context.imageCount; i++)

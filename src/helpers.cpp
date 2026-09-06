@@ -1,5 +1,6 @@
 #include "helpers.hpp"
 #include <cstdint>
+#include <iostream>
 #include <stdexcept>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -20,6 +21,43 @@ void GPUImage::destroy(VkDevice device) {
         memory = VK_NULL_HANDLE;
     }
 }
+
+template<typename Pixel>
+ImageData<Pixel>::ImageData(const std::filesystem::path& path, int channels, bool flip) : path(path) {
+
+    if (path.empty()) return;
+    stbi_set_flip_vertically_on_load(flip);
+
+    if constexpr (std::is_same_v<Pixel, stbi_uc>) {
+        data = stbi_load(
+            path.c_str(),
+            &width,
+            &height,
+            &this->channels,
+            channels
+        );
+    }
+    else if constexpr (std::is_same_v<Pixel, float>) {
+        data = stbi_loadf(
+            path.c_str(),
+            &width,
+            &height,
+            &this->channels,
+            channels
+        );
+    }
+
+    if (data) std::cout << "Image loaded: " << path.c_str() << ", " << width << " x " << height << ", channels: " << channels << std::endl;
+    else throw std::runtime_error("Failed to load image: " + path.string());
+}
+
+template<typename Pixel>
+ImageData<Pixel>::~ImageData() {
+    if (data) delete [] data;
+}
+
+template struct ImageData<stbi_uc>;
+template struct ImageData<float>;
 
 void copyBuffer(
     VkDevice device,
@@ -492,11 +530,11 @@ void transitionImageLayout(
     vkFreeCommandBuffers(device, commandPool, 1, &cmdBuffer);
 }
 
-std::vector<char> readFile(const std::string& path) {
+std::vector<char> readFile(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
 
     if (!file)
-        throw std::runtime_error("Failed to open file: " + path);
+        throw std::runtime_error("Failed to open file: " + path.string());
 
     size_t size = file.tellg();
     std::vector<char> buffer(size);

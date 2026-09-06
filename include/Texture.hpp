@@ -11,17 +11,17 @@ private:
     RenderContext context;
     GPUImage image;
     VkFormat format;
-    std::string path;
+    std::filesystem::path path;
     VkSampler sampler = VK_NULL_HANDLE;
     Type type;
 
-    ImageInfo<stbi_uc> loadImage();
+    ImageData<stbi_uc> loadImage();
     void create();
 
 
 
 public:
-    Texture(const RenderContext& context, const std::string& path, Type type);
+    Texture(const RenderContext& context, const std::filesystem::path& path, Type type);
     VkDescriptorImageInfo descriptorInfo() const;
     void destroy();
 };

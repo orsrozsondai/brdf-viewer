@@ -9,18 +9,17 @@
 #include <vulkan/vulkan_core.h>
 
 
-Texture::Texture(const RenderContext& context, const std::string& path, Type type) : context(context), path(path), type(type) {
+Texture::Texture(const RenderContext& context, const std::filesystem::path& path, Type type) : context(context), path(path), type(type) {
     create();
     
 }
 
-ImageInfo<stbi_uc> Texture::loadImage() {
-    ImageInfo<stbi_uc> res;
+ImageData<stbi_uc> Texture::loadImage() {
 
     if (path.empty()) {
         throw std::runtime_error("File path is empty");
     }
-    if (path.ends_with(".jpg") || path.ends_with(".png")) {
+    if (path.extension().string().compare(".jpg") == 0 || path.extension().string().compare(".png") == 0) {
         int desiredChannels = 0;
         switch (type) {
             case TEXTURE_ALBEDO: desiredChannels = STBI_rgb_alpha; break;
@@ -29,28 +28,22 @@ ImageInfo<stbi_uc> Texture::loadImage() {
             case TEXTURE_METALLIC_MAP: desiredChannels = STBI_grey; break;
             default: break;
         }
-        stbi_set_flip_vertically_on_load(true);
-        res.data = stbi_load(path.c_str(), &res.width, &res.height, &res.channels,desiredChannels);
-        stbi_set_flip_vertically_on_load(false);
+        ImageData<stbi_uc> res(path, desiredChannels, true);
         switch (res.channels) {
             case 1: format = VK_FORMAT_R8_UNORM; break;
             default: format = VK_FORMAT_R8G8B8A8_SRGB; res.channels = 4; break;
         }
-        if (res.data)
-            std::cout << "Image loaded: " << res.width << " x " << res.height << ", " << res.channels << std::endl;
-        else
-            throw std::runtime_error("Failed to load image: " + path);
+        return res;
     }
     else {
         throw std::runtime_error("Not supported image format");
     }
     
-    return res;
 }
 
 void Texture::create() {
 
-    ImageInfo info = loadImage();
+    ImageData info = loadImage();
     VkDeviceSize imageSize = info.width * info.height * info.channels * sizeof(stbi_uc);
 
     VkBuffer stagingBuffer;
@@ -132,8 +125,6 @@ void Texture::create() {
 
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
     vkFreeMemory(context.device, stagingMemory, nullptr);
-
-    stbi_image_free(info.data);
 
     //sampler
 
