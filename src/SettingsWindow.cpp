@@ -118,6 +118,8 @@ void SettingsWindow::update() {
 
     ImGui::Begin("Settings",nullptr,ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
 
+    ImGui::BeginTabBar("tabbar");
+
     MaterialUBO* materialUbo = scene->selectedObject()->ubo();
     SceneUBO* sceneUBO = scene->ubo();
     bool interpolatedObject = scene->isObjectInterpolated();
@@ -137,180 +139,209 @@ void SettingsWindow::update() {
     static const auto meshNames = scene->getMeshNames();
     ImGuiStyle& style = ImGui::GetStyle();
 
-    ImGui::PushItemWidth(-FLT_MIN);
+    if (ImGui::BeginTabItem("Scene")) {
 
-    ImGui::SeparatorText("Scene");
-    ImGui::Text("Object count:");
-    if (ImGui::SliderInt("##obj_count", &objc, 1, MAX_OBJECT_COUNT)) {
-        scene->setObjectCount(objc);
-    }
-    ImGui::Text("Mesh:");
-    if (ImGui::Combo("##mesh", &meshIndex, meshNames.data(), meshNames.size())) {
-        scene->setMeshIndex(meshIndex);
-    }
-    ImGui::Text("Object distance:");
-    if (ImGui::SliderFloat("##obj_dist", &objd, 1.f, 10.f)) {
-        scene->setObjectDistance(objd);
-    }
-    for (int i = 0; i < TEXTURE_TYPE_COUNT; ++i) {
-        if (ImGui::Checkbox(textureNames[i], &textures[i])) {
-            sceneUBO->textures = 0;
-            for (int texIdx = 0; texIdx < TEXTURE_TYPE_COUNT; ++texIdx)
-                if (textures[texIdx]) sceneUBO->textures += 1 << texIdx;
+        ImGui::PushItemWidth(-FLT_MIN);
+
+        // ImGui::SeparatorText("Scene");
+        ImGui::Text("Object count:");
+        if (ImGui::SliderInt("##obj_count", &objc, 1, MAX_OBJECT_COUNT)) {
+            scene->setObjectCount(objc);
         }
-    }
-    ImGui::Text("Camera FOV:");
-    if (ImGui::SliderInt("##fov", &cameraFov, 30, 90)) {
-        scene->getCamera()->setFov((float)cameraFov);
-    }
-    ImGui::Text("BRDF:");
-    ImGui::PopItemWidth();
-    if (ImGui::Combo("Diffuse", &diffuse, BRDFNames, 4)) {
-        sceneUBO->brdf = (1 << diffuse) | (1 << (specular + 4));
-        scene->reloadShaders();
-    }
-    if (ImGui::Combo("Specular", &specular, &BRDFNames[4], 5)) {
-        sceneUBO->brdf = (1 << diffuse) | (1 << (specular + 4));
-        scene->reloadShaders();
-    }
-
-
-    ImGui::PushItemWidth(-FLT_MIN);
-    static bool changed_param = false;
-
-    ImGui::SeparatorText("Material");
-    
-    ImGui::PushItemWidth(- ImGui::GetFrameHeight() - style.FramePadding.x);
-
-
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[ALBEDO]);
-    changed_param = false;
-    ImGui::Text("Color:");
-    changed_param = changed_param | ImGui::ColorEdit3("##albedo", glm::value_ptr(materialUbo->albedo));
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##albedo_lerp", &interpolatedParameters[ALBEDO]);
-    imguiTooltip("Interpolate");
-
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[ROUGHNESS]);
-    ImGui::Text("Roughness:");
-    changed_param = changed_param | ImGui::SliderFloat("##roughness", &materialUbo->roughness, 0.0f, 1.0f);
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##roughness_lerp", &interpolatedParameters[ROUGHNESS]);
-    imguiTooltip("Interpolate");
-    
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[METALLIC]);
-    ImGui::Text("Metallic:");
-    changed_param = changed_param | ImGui::SliderFloat("##metallic", &materialUbo->metallic, 0.0f, 1.0f);
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##metallic_lerp", &interpolatedParameters[METALLIC]);
-    imguiTooltip("Interpolate");
-
-    ImGui::BeginDisabled(!(sceneUBO->brdf & BRDF_SPECULAR_DISNEY));
-
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[SHEEN]);
-    ImGui::Text("Sheen:");
-    changed_param = changed_param | ImGui::SliderFloat("##sheen", &materialUbo->sheen, 0.0f, 1.0f);
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##sheen_lerp", &interpolatedParameters[SHEEN]);
-    imguiTooltip("Interpolate");
-
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[SHEEN_TINT]);
-    ImGui::Text("Sheen Tint:");
-    changed_param = changed_param | ImGui::SliderFloat("##sheen_tint", &materialUbo->sheenTint, 0.0f, 1.0f);
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##sheen_tint_lerp", &interpolatedParameters[SHEEN_TINT]);
-    imguiTooltip("Interpolate");
-
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[CLEARCOAT]);
-    ImGui::Text("Clearcoat:");
-    changed_param = changed_param | ImGui::SliderFloat("##clearcoat", &materialUbo->clearcoat, 0.0f, 1.0f);
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##clearcoat_lerp", &interpolatedParameters[CLEARCOAT]);
-    imguiTooltip("Interpolate");
-
-    ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[CLEARCOAT_GLOSS]);
-    ImGui::Text("Clearcoat Gloss:");
-    changed_param = changed_param | ImGui::SliderFloat("##clearcoat_gloss", &materialUbo->clearcoatGloss, 0.0f, 1.0f);
-    ImGui::SameLine(0, style.FramePadding.x);
-    ImGui::EndDisabled();
-    ImGui::Checkbox("##clearcoat_gloss_lerp", &interpolatedParameters[CLEARCOAT_GLOSS]);
-    imguiTooltip("Interpolate");
-
-    ImGui::EndDisabled();
-
-    if (ImGui::Button("Apply to all")) {
-        scene->applySettingsToAll();
-    }
-
-    if (changed_param) {
-        for (size_t i = 0; i < interpolatedParameters.size(); i++) {
-            if (interpolatedParameters[i]) scene->interpolate((MaterialParameters)i);
+        ImGui::Text("Mesh:");
+        if (ImGui::Combo("##mesh", &meshIndex, meshNames.data(), meshNames.size())) {
+            scene->setMeshIndex(meshIndex);
         }
-    }
-    ImGui::PopItemWidth();
-    
-    
-
-    ImGui::SeparatorText("Light");
-
-    ImGui::Checkbox("Use IBL", (bool*) &sceneUBO->ibl);
-
-    ImGui::BeginDisabled(sceneUBO->ibl);
-
-    ImGui::Text("Type:");
-    if (ImGui::Combo("##light_type", &type, lightTypes, IM_ARRAYSIZE(lightTypes))) {
-        sceneUBO->lightPos.w = (float)type;
-    }
-    ImGui::Text("Color:");
-    if (ImGui::ColorEdit3("##light_color", glm::value_ptr(lightColor))) {
-        sceneUBO->lightColor = lightColor * lightIntensity;
-    }
-    ImGui::Text("Intensity:");
-    if (ImGui::SliderFloat("##light_intensity", &lightIntensity, 0, 10)) {
-        sceneUBO->lightColor = lightColor * lightIntensity;
-    }
-    if (type) {
-        ImGui::Text("Position (x,y,z):");
-        ImGui::SliderFloat3("##light_pos", glm::value_ptr(sceneUBO->lightPos), -100.0f, 100.0f, "%.0f");
-    }
-    else {
-        ImGui::Text("Direction (Azimuth/Inclination):");
-        float itemWidth = ImGui::CalcItemWidth() - style.FramePadding.x;
-        ImGui::PushItemWidth(itemWidth/2.0);
-        if (ImGui::SliderFloat("##light_dir_azimuth", &lightDir.x, 0.0f, 360.0f, "%.0f")) {
-            float phi = glm::radians(lightDir.y);
-            float theta = glm::radians(lightDir.x);
-            sceneUBO->lightPos.z = -sin(phi) * cos(theta);
-            sceneUBO->lightPos.y = -cos(phi);
-            sceneUBO->lightPos.x = sin(phi) * sin(theta);
-        };
-        ImGui::SameLine(0,style.FramePadding.x);
-        if (ImGui::SliderFloat("##light_dir_inclination", &lightDir.y, 0.0f, 180.0f, "%.0f")) {
-            float phi = glm::radians(lightDir.y);
-            float theta = glm::radians(lightDir.x);
-            sceneUBO->lightPos.z = -sin(phi) * cos(theta);
-            sceneUBO->lightPos.y = -cos(phi);
-            sceneUBO->lightPos.x = sin(phi) * sin(theta);
-        };
+        ImGui::Text("Object distance:");
+        if (ImGui::SliderFloat("##obj_dist", &objd, 1.f, 10.f)) {
+            scene->setObjectDistance(objd);
+        }
+        
+        ImGui::Text("Camera FOV:");
+        if (ImGui::SliderInt("##fov", &cameraFov, 30, 90)) {
+            scene->getCamera()->setFov((float)cameraFov);
+        }
+        ImGui::Text("BRDF:");
         ImGui::PopItemWidth();
+        if (ImGui::Combo("Diffuse", &diffuse, BRDFNames, 4)) {
+            sceneUBO->brdf = (1 << diffuse) | (1 << (specular + 4));
+            scene->reloadShaders();
+        }
+        if (ImGui::Combo("Specular", &specular, &BRDFNames[4], 5)) {
+            sceneUBO->brdf = (1 << diffuse) | (1 << (specular + 4));
+            scene->reloadShaders();
+        }
+
+        ImGui::EndTabItem();
     }
-    ImGui::Text("Ambient:");
-    ImGui::ColorEdit3("##ambientlight", glm::value_ptr(sceneUBO->ambientLight));
 
-    ImGui::EndDisabled();
+    if (ImGui::BeginTabItem("Material")) {
 
-    ImGui::SeparatorText("Post processing");
-    ImGui::Checkbox("Tone Mapping", (bool*)&sceneUBO->toneMapping);
-    ImGui::BeginDisabled(!sceneUBO->toneMapping);
-    ImGui::Text("Exposure:");
-    ImGui::SliderFloat("##exposure", &sceneUBO->exposure, 0, 2);
-    ImGui::EndDisabled();
+        ImGui::PushItemWidth(-FLT_MIN);
+        static bool changed_param = false;
+
+        // ImGui::SeparatorText("Material");
+        
+        ImGui::PushItemWidth(- ImGui::GetFrameHeight() - style.FramePadding.x);
+
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[ALBEDO]);
+        changed_param = false;
+        ImGui::Text("Color:");
+        changed_param = changed_param | ImGui::ColorEdit3("##albedo", glm::value_ptr(materialUbo->albedo));
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##albedo_lerp", &interpolatedParameters[ALBEDO]);
+        imguiTooltip("Interpolate");
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[ROUGHNESS]);
+        ImGui::Text("Roughness:");
+        changed_param = changed_param | ImGui::SliderFloat("##roughness", &materialUbo->roughness, 0.0f, 1.0f);
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##roughness_lerp", &interpolatedParameters[ROUGHNESS]);
+        imguiTooltip("Interpolate");
+        
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[METALLIC]);
+        ImGui::Text("Metallic:");
+        changed_param = changed_param | ImGui::SliderFloat("##metallic", &materialUbo->metallic, 0.0f, 1.0f);
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##metallic_lerp", &interpolatedParameters[METALLIC]);
+        imguiTooltip("Interpolate");
+
+        ImGui::BeginDisabled(!(sceneUBO->brdf & BRDF_SPECULAR_DISNEY));
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[SHEEN]);
+        ImGui::Text("Sheen:");
+        changed_param = changed_param | ImGui::SliderFloat("##sheen", &materialUbo->sheen, 0.0f, 1.0f);
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##sheen_lerp", &interpolatedParameters[SHEEN]);
+        imguiTooltip("Interpolate");
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[SHEEN_TINT]);
+        ImGui::Text("Sheen Tint:");
+        changed_param = changed_param | ImGui::SliderFloat("##sheen_tint", &materialUbo->sheenTint, 0.0f, 1.0f);
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##sheen_tint_lerp", &interpolatedParameters[SHEEN_TINT]);
+        imguiTooltip("Interpolate");
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[CLEARCOAT]);
+        ImGui::Text("Clearcoat:");
+        changed_param = changed_param | ImGui::SliderFloat("##clearcoat", &materialUbo->clearcoat, 0.0f, 1.0f);
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##clearcoat_lerp", &interpolatedParameters[CLEARCOAT]);
+        imguiTooltip("Interpolate");
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[CLEARCOAT_GLOSS]);
+        ImGui::Text("Clearcoat Gloss:");
+        changed_param = changed_param | ImGui::SliderFloat("##clearcoat_gloss", &materialUbo->clearcoatGloss, 0.0f, 1.0f);
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##clearcoat_gloss_lerp", &interpolatedParameters[CLEARCOAT_GLOSS]);
+        imguiTooltip("Interpolate");
+
+        ImGui::EndDisabled();
+
+        if (ImGui::Button("Apply to all")) {
+            scene->applySettingsToAll();
+        }
+
+        for (int i = 0; i < TEXTURE_TYPE_COUNT; ++i) {
+            if (ImGui::Checkbox(textureNames[i], &textures[i])) {
+                sceneUBO->textures = 0;
+                for (int texIdx = 0; texIdx < TEXTURE_TYPE_COUNT; ++texIdx)
+                    if (textures[texIdx]) sceneUBO->textures += 1 << texIdx;
+            }
+        }
+
+        if (changed_param) {
+            for (size_t i = 0; i < interpolatedParameters.size(); i++) {
+                if (interpolatedParameters[i]) scene->interpolate((MaterialParameters)i);
+            }
+        }
+        ImGui::PopItemWidth();
+        ImGui::PopItemWidth();
+
+
+        ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("Lighting")) {
+    
+        ImGui::PushItemWidth(-FLT_MIN);
+        
+
+        // ImGui::SeparatorText("Light");
+
+        ImGui::Checkbox("Use IBL", (bool*) &sceneUBO->ibl);
+
+        ImGui::BeginDisabled(sceneUBO->ibl);
+
+        ImGui::Text("Type:");
+        if (ImGui::Combo("##light_type", &type, lightTypes, IM_ARRAYSIZE(lightTypes))) {
+            sceneUBO->lightPos.w = (float)type;
+        }
+        ImGui::Text("Color:");
+        if (ImGui::ColorEdit3("##light_color", glm::value_ptr(lightColor))) {
+            sceneUBO->lightColor = lightColor * lightIntensity;
+        }
+        ImGui::Text("Intensity:");
+        if (ImGui::SliderFloat("##light_intensity", &lightIntensity, 0, 10)) {
+            sceneUBO->lightColor = lightColor * lightIntensity;
+        }
+        if (type) {
+            ImGui::Text("Position (x,y,z):");
+            ImGui::SliderFloat3("##light_pos", glm::value_ptr(sceneUBO->lightPos), -100.0f, 100.0f, "%.0f");
+        }
+        else {
+            ImGui::Text("Direction (Azimuth/Inclination):");
+            float itemWidth = ImGui::CalcItemWidth() - style.FramePadding.x;
+            ImGui::PushItemWidth(itemWidth/2.0);
+            if (ImGui::SliderFloat("##light_dir_azimuth", &lightDir.x, 0.0f, 360.0f, "%.0f")) {
+                float phi = glm::radians(lightDir.y);
+                float theta = glm::radians(lightDir.x);
+                sceneUBO->lightPos.z = -sin(phi) * cos(theta);
+                sceneUBO->lightPos.y = -cos(phi);
+                sceneUBO->lightPos.x = sin(phi) * sin(theta);
+            };
+            ImGui::SameLine(0,style.FramePadding.x);
+            if (ImGui::SliderFloat("##light_dir_inclination", &lightDir.y, 0.0f, 180.0f, "%.0f")) {
+                float phi = glm::radians(lightDir.y);
+                float theta = glm::radians(lightDir.x);
+                sceneUBO->lightPos.z = -sin(phi) * cos(theta);
+                sceneUBO->lightPos.y = -cos(phi);
+                sceneUBO->lightPos.x = sin(phi) * sin(theta);
+            };
+            ImGui::PopItemWidth();
+        }
+        ImGui::Text("Ambient:");
+        ImGui::ColorEdit3("##ambientlight", glm::value_ptr(sceneUBO->ambientLight));
+
+        ImGui::EndDisabled();
+
+        ImGui::PopItemWidth();
+
+        ImGui::EndTabItem();
+    }
+
+    ImGui::PushItemWidth(-FLT_MIN);
+
+    // ImGui::SeparatorText("Post processing");
+    if (ImGui::BeginTabItem("Rendering")) {
+        ImGui::Checkbox("Tone Mapping", (bool*)&sceneUBO->toneMapping);
+        ImGui::BeginDisabled(!sceneUBO->toneMapping);
+        ImGui::Text("Exposure:");
+        ImGui::SliderFloat("##exposure", &sceneUBO->exposure, 0, 2);
+        ImGui::EndDisabled();
+
+        ImGui::EndTabItem();
+    }
+
+    ImGui::EndTabBar();
 
     float textHeight = ImGui::GetTextLineHeightWithSpacing();
 
