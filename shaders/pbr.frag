@@ -244,7 +244,7 @@ void main() {
     mat3 TBN = mat3(t, b, n);
 
     vec3 normal = texture(normalMap, uv).rgb;
-    // normal = normal * 2.0 - 1.0;
+    normal = normal * 2.0 - 1.0;
 
     n = ((scene.textures & TEXTURE_NORMAL_MAP) != 0)
         ? normalize(TBN * normal)

@@ -22,17 +22,14 @@ ImageData<stbi_uc> Texture::loadImage() {
     if (path.extension().string().compare(".jpg") == 0 || path.extension().string().compare(".png") == 0) {
         int desiredChannels = 0;
         switch (type) {
-            case TEXTURE_ALBEDO: desiredChannels = STBI_rgb_alpha; break;
-            case TEXTURE_NORMAL_MAP: desiredChannels = STBI_rgb_alpha; break;
-            case TEXTURE_ROUGHNESS_MAP: desiredChannels = STBI_grey; break;
-            case TEXTURE_METALLIC_MAP: desiredChannels = STBI_grey; break;
+            case TEXTURE_ALBEDO: desiredChannels = STBI_rgb_alpha; format = VK_FORMAT_R8G8B8A8_SRGB; break;
+            case TEXTURE_NORMAL_MAP: desiredChannels = STBI_rgb_alpha; format = VK_FORMAT_R8G8B8A8_UNORM; break;
+            case TEXTURE_ROUGHNESS_MAP: desiredChannels = STBI_grey; format = VK_FORMAT_R8_UNORM; break;
+            case TEXTURE_METALLIC_MAP: desiredChannels = STBI_grey; format = VK_FORMAT_R8_UNORM; break;
             default: break;
         }
         ImageData<stbi_uc> res(path, desiredChannels, true);
-        switch (res.channels) {
-            case 1: format = VK_FORMAT_R8_UNORM; break;
-            default: format = VK_FORMAT_R8G8B8A8_SRGB; res.channels = 4; break;
-        }
+        res.channels = desiredChannels;
         return res;
     }
     else {
