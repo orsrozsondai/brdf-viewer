@@ -3,6 +3,7 @@
 #include "RenderContext.hpp"
 #include "UniformBufferObjects.hpp"
 #include "helpers.hpp"
+#include <cstdint>
 #include <vulkan/vulkan_core.h>
 class Texture {
 public:
@@ -17,7 +18,7 @@ private:
 
     ImageData<stbi_uc> loadImage();
     void create();
-
+    void generateMipmaps(uint32_t width, uint32_t height);
 
 
 public:
