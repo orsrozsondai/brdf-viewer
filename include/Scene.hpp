@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/ext/vector_float3.hpp>
+#include <map>
 #include <vector>
 #include <memory>
 #include <vulkan/vulkan_core.h>
@@ -14,6 +15,7 @@
 
 class Scene {
 private:
+    using MeshAndMaterial = std::pair<std::unique_ptr<MeshLoader>, Material>;
     int currentObjectCount = 3;
     float objectDistance = 2;
     int meshIndex = 0;
@@ -21,7 +23,7 @@ private:
     RenderContext context;
     std::vector<Object*> objects;
     SceneUBO sceneUBO;
-    std::vector<std::unique_ptr<MeshLoader>> meshes;
+    std::vector<MeshAndMaterial> meshes;
     std::vector<VkDescriptorSet> descriptorSets;
     Pipeline* pipeline;
     std::vector<VkBuffer> uniformBuffers;
@@ -29,7 +31,6 @@ private:
     std::vector<void*> uniformBuffersMapped;
     Camera* camera;
     EnvMap* env = nullptr;
-    VkDescriptorSet iblDS = VK_NULL_HANDLE;
 
     void createDescriptorSets();
     void updateDescriptorSets();
@@ -45,7 +46,7 @@ public:
 
     void update();
     void draw(VkCommandBuffer cmd, VkExtent2D extent, size_t frameIndex);
-    void addMesh(std::unique_ptr<MeshLoader> mesh, const std::vector<std::shared_ptr<Texture>>& textures = {});
+    void addMesh(std::unique_ptr<MeshLoader> mesh, Material material);
     void setMeshIndex(int index);
     const std::vector<const char*> getMeshNames() const;
     Pipeline* getPipeline() const;
@@ -55,6 +56,7 @@ public:
     void cycleSelected(int dir); // -1 = left, 1 = right
     void setObjectCount(int c);
     void setObjectDistance(float d);
+    void setObjectScale(float s);
     void applySettingsToAll();
     void interpolate(MaterialParameters param);
     bool isObjectInterpolated();

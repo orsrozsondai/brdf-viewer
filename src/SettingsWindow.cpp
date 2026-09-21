@@ -124,9 +124,9 @@ void SettingsWindow::update() {
     SceneUBO* sceneUBO = scene->ubo();
     bool interpolatedObject = scene->isObjectInterpolated();
     static int objc = 3;
-    static float objd = 2;
-    static bool textures[TEXTURE_TYPE_COUNT] = {false, false, false, false};
-    static const char* textureNames[TEXTURE_TYPE_COUNT] = {"Texture", "Normal map", "Roughness map", "Metallic map"};
+    static float objd = 2, obj_scale = 1;
+    static bool textures[TEXTURE_TYPE_COUNT] = {false};
+    static const char* textureNames[TEXTURE_TYPE_COUNT] = {"Texture", "Normal map", "Roughness map", "Metallic map", "Emission map", "Ambient occlusion map"};
     static const char* lightTypes[] = {"directional", "positional"};
     static int type = (int)sceneUBO->lightPos.w;
     static glm::vec2 lightDir(0,0);
@@ -155,6 +155,11 @@ void SettingsWindow::update() {
         ImGui::Text("Object distance:");
         if (ImGui::SliderFloat("##obj_dist", &objd, 1.f, 10.f)) {
             scene->setObjectDistance(objd);
+        }
+
+        ImGui::Text("Object scale:");
+        if (ImGui::SliderFloat("##obj_scale", &obj_scale, 0.1f, 10.f)) {
+            scene->setObjectScale(obj_scale);
         }
         
         ImGui::Text("Camera FOV:");
@@ -208,6 +213,14 @@ void SettingsWindow::update() {
         ImGui::SameLine(0, style.FramePadding.x);
         ImGui::EndDisabled();
         ImGui::Checkbox("##metallic_lerp", &interpolatedParameters[METALLIC]);
+        imguiTooltip("Interpolate");
+
+        ImGui::BeginDisabled(interpolatedObject & interpolatedParameters[EMISSION]);
+        ImGui::Text("Emission:");
+        changed_param = changed_param | ImGui::ColorEdit3("##emission", glm::value_ptr(materialUbo->emission));
+        ImGui::SameLine(0, style.FramePadding.x);
+        ImGui::EndDisabled();
+        ImGui::Checkbox("##emission_lerp", &interpolatedParameters[EMISSION]);
         imguiTooltip("Interpolate");
 
         ImGui::BeginDisabled(!(sceneUBO->brdf & BRDF_SPECULAR_DISNEY));

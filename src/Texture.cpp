@@ -15,6 +15,10 @@ Texture::Texture(const RenderContext& context, const std::filesystem::path& path
     
 }
 
+const Texture::Type Texture::getType() const {
+    return type;
+}
+
 ImageData<stbi_uc> Texture::loadImage() {
 
     if (path.empty()) {
@@ -27,6 +31,8 @@ ImageData<stbi_uc> Texture::loadImage() {
             case TEXTURE_NORMAL_MAP: desiredChannels = STBI_rgb_alpha; format = VK_FORMAT_R8G8B8A8_UNORM; break;
             case TEXTURE_ROUGHNESS_MAP: desiredChannels = STBI_grey; format = VK_FORMAT_R8_UNORM; break;
             case TEXTURE_METALLIC_MAP: desiredChannels = STBI_grey; format = VK_FORMAT_R8_UNORM; break;
+            case TEXTURE_EMISSION_MAP: desiredChannels = STBI_rgb_alpha; format = VK_FORMAT_R8G8B8A8_SRGB; break;
+            case TEXTURE_AMBIENT_OCCLUSION_MAP: desiredChannels = STBI_grey; format = VK_FORMAT_R8_UNORM; break;
             default: break;
         }
         ImageData<stbi_uc> res(path, desiredChannels, true);

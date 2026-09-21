@@ -86,7 +86,7 @@ void main() {
     
         vec3 L = sampleHemisphere(N, Xi);
     
-        vec3 envColor = min(vec3(5),texture(uEnvMap, L).rgb);
+        vec3 envColor = min(vec3(10),texture(uEnvMap, L).rgb);
 
         irradiance += envColor;
     }

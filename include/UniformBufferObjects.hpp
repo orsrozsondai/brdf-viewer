@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/vector_float3.hpp>
@@ -7,14 +8,17 @@
 #include <glm/mat4x4.hpp>
 #include <stdexcept>
 
+#define MATERIAL_PARAMETER_COUNT 8
+
 enum MaterialParameters {
     ALBEDO = 0,
     METALLIC = 1,
     ROUGHNESS = 2,
-    SHEEN = 3,
-    SHEEN_TINT = 4,
-    CLEARCOAT = 5,
-    CLEARCOAT_GLOSS = 6
+    EMISSION = 3,
+    SHEEN = 4,
+    SHEEN_TINT = 5,
+    CLEARCOAT = 6,
+    CLEARCOAT_GLOSS = 7
 };
 
 enum BRDFFlags {
@@ -31,19 +35,26 @@ enum BRDFFlags {
 
 typedef uint32_t BRDF;
 
-#define TEXTURE_TYPE_COUNT 4
+#define TEXTURE_TYPE_COUNT 6
 
-enum TextureFlags {
-    TEXTURE_ALBEDO              = 1 << 0,
-    TEXTURE_NORMAL_MAP          = 1 << 1,
-    TEXTURE_ROUGHNESS_MAP       = 1 << 2,
-    TEXTURE_METALLIC_MAP        = 1 << 3
+enum TextureType {
+    TEXTURE_ALBEDO                  = 1 << 0,
+    TEXTURE_NORMAL_MAP              = 1 << 1,
+    TEXTURE_ROUGHNESS_MAP           = 1 << 2,
+    TEXTURE_METALLIC_MAP            = 1 << 3,
+    TEXTURE_EMISSION_MAP            = 1 << 4,
+    TEXTURE_AMBIENT_OCCLUSION_MAP   = 1 << 5,
 };
+
+inline constexpr uint TextureBinding(TextureType type) {
+    return log2(type) + 2;
+}
 
 struct MaterialUBO {
     alignas(16) glm::vec3 albedo;
     float metallic;
     float roughness;
+    alignas(16) glm::vec3 emission;
 
     float sheen;
     float sheenTint;
@@ -55,6 +66,7 @@ struct MaterialUBO {
         albedo = {0,0,0};
         metallic = 0;
         roughness = 0;
+        emission = {0,0,0};
         sheen = 0;
         sheenTint = 0;
         clearcoat = 0;
@@ -66,6 +78,7 @@ struct MaterialUBO {
             case ALBEDO: return &albedo;
             case METALLIC: return &metallic;
             case ROUGHNESS: return &roughness;
+            case EMISSION: return &emission;
             case SHEEN: return &sheen;
             case SHEEN_TINT: return &sheenTint;
             case CLEARCOAT: return &clearcoat;

@@ -29,45 +29,27 @@ void Pipeline::createLayout() {
     materialUboLayoutBinding.descriptorCount = 1;
     materialUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     
-    VkDescriptorSetLayoutBinding textureLayoutBinding{};
-    textureLayoutBinding.binding = 2;
-    textureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    textureLayoutBinding.descriptorCount = 1;
-    textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutBinding normalMapLayoutBinding{};
-    normalMapLayoutBinding.binding = 3;
-    normalMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    normalMapLayoutBinding.descriptorCount = 1;
-    normalMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutBinding roughnessMapLayoutBinding{};
-    roughnessMapLayoutBinding.binding = 4;
-    roughnessMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    roughnessMapLayoutBinding.descriptorCount = 1;
-    roughnessMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutBinding metallicMapLayoutBinding{};
-    metallicMapLayoutBinding.binding = 5;
-    metallicMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    metallicMapLayoutBinding.descriptorCount = 1;
-    metallicMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    
     VkDescriptorSetLayoutBinding sceneUboLayoutBinding{};
     sceneUboLayoutBinding.binding = 0;
     sceneUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     sceneUboLayoutBinding.descriptorCount = 1;
     sceneUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    
 
-    std::array<VkDescriptorSetLayoutBinding, 6> bindings = {
+    std::array<VkDescriptorSetLayoutBinding, TEXTURE_TYPE_COUNT + 2> bindings = {
         vsUboLayoutBinding,
-        materialUboLayoutBinding,
-        textureLayoutBinding,
-        normalMapLayoutBinding,
-        roughnessMapLayoutBinding,
-        metallicMapLayoutBinding
+        materialUboLayoutBinding
     };
+
+    // bindings for textures
+    for (int i = 0; i < TEXTURE_TYPE_COUNT; ++i) {
+        VkDescriptorSetLayoutBinding textureBinding{};
+        textureBinding.binding = i+2;
+        textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        textureBinding.descriptorCount = 1;
+        textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        bindings[i+2] = textureBinding;
+    }
 
     std::array<VkDescriptorSetLayoutBinding, 3> iblBindings;
     iblBindings[0].binding = 0;

@@ -7,7 +7,7 @@
 #include <vulkan/vulkan_core.h>
 class Texture {
 public:
-    using Type = TextureFlags;
+    using Type = TextureType;
 private:
     RenderContext context;
     GPUImage image;
@@ -23,6 +23,7 @@ private:
 
 public:
     Texture(const RenderContext& context, const std::filesystem::path& path, Type type);
+    const Type getType() const;
     VkDescriptorImageInfo descriptorInfo() const;
     void destroy();
 };

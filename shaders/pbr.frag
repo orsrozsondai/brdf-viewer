@@ -13,6 +13,7 @@ layout(set = 0, binding = 1) uniform MaterialUBO {
     vec3 albedo;
     float metallic;
     float roughness;
+    vec3 emission;
     
     float sheen;
     float sheenTint;
@@ -24,6 +25,8 @@ layout(set = 0, binding = 2) uniform sampler2D tex;
 layout(set = 0, binding = 3) uniform sampler2D normalMap;
 layout(set = 0, binding = 4) uniform sampler2D roughnessMap;
 layout(set = 0, binding = 5) uniform sampler2D metallicMap;
+layout(set = 0, binding = 6) uniform sampler2D emissionMap;
+layout(set = 0, binding = 7) uniform sampler2D aoMap;
 
 layout(set = 1, binding = 0) uniform SceneUBO {
     bool ibl;
@@ -54,10 +57,12 @@ layout(set = 2, binding = 2) uniform sampler2D brdfLUT;
 #define BRDF_SPECULAR_WARD          (1 << 7)
 #define BRDF_SPECULAR_DISNEY        (1 << 8)
 
-#define TEXTURE_ALBEDO              (1 << 0)
-#define TEXTURE_NORMAL_MAP          (1 << 1)
-#define TEXTURE_ROUGHNESS_MAP       (1 << 2)
-#define TEXTURE_METALLIC_MAP        (1 << 3)
+#define TEXTURE_ALBEDO                  (1 << 0)
+#define TEXTURE_NORMAL_MAP              (1 << 1)
+#define TEXTURE_ROUGHNESS_MAP           (1 << 2)
+#define TEXTURE_METALLIC_MAP            (1 << 3)
+#define TEXTURE_EMISSION_MAP            (1 << 4)
+#define TEXTURE_AMBIENT_OCCLUSION_MAP   (1 << 5)
 
 const float PI = 3.1415926535;
 
@@ -263,6 +268,10 @@ void main() {
         ? texture(metallicMap, uv).r
         : material.metallic;
 
+    float ao = ((scene.textures & TEXTURE_AMBIENT_OCCLUSION_MAP) != 0)
+        ? texture(aoMap, uv).r
+        : 1.0;
+
     vec3 color = vec3(0,0,0);
     float ndotl = max(dot(normalize(n), l), 0.0);
     float ndotv = max(dot(normalize(n), v), 0.0);
@@ -270,15 +279,15 @@ void main() {
         float kD = 1.0 - metallic;
         vec3 R = reflect(-v,n);
         if ((BRDF_DIFFUSE_LAMBERT & BRDF) != 0) {
-            color += texture(irradiance, n).rgb * albedo * kD;
+            color += texture(irradiance, n).rgb * albedo * kD * ao;
         }
 
         if ((BRDF_DIFFUSE_OREN_NAYAR & BRDF) != 0) {
-            color += texture(irradiance, n).rgb * albedo * fd_orennayar(n, n, v, roughness) * kD;
+            color += texture(irradiance, n).rgb * albedo * fd_orennayar(n, n, v, roughness) * kD * ao;
         }
 
         if ((BRDF_DIFFUSE_BURLEY & BRDF) != 0) {
-            color += texture(irradiance, n).rgb * albedo * fd_burley(n, v, normalize(v+n), n, roughness) * kD;
+            color += texture(irradiance, n).rgb * albedo * fd_burley(n, v, normalize(v+n), n, roughness) * kD * ao;
         }
 
         if ((BRDF_SPECULAR_BLINN_PHONG & BRDF) != 0) {
@@ -341,7 +350,7 @@ void main() {
 
     }
     else {
-        color = scene.ambientLight * albedo * 0.1; 
+        color = scene.ambientLight * albedo * 0.1 * ao; 
         vec3 kD = vec3(1.0) - F_schlick(v, h, metallic, albedo);
         kD *= (1.0 - metallic);
 
@@ -376,6 +385,11 @@ void main() {
         }
 
     }
+
+    vec3 emission = ((scene.textures & TEXTURE_EMISSION_MAP) != 0)
+        ? texture(emissionMap, uv).rgb
+        : material.emission;
+    color += emission;
 
     
     if (scene.toneMapping) {

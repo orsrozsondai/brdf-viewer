@@ -1,6 +1,7 @@
 #include "App.hpp"
 #include "Camera.hpp"
 #include "EnvMap.hpp"
+#include "Material.hpp"
 #include "MeshLoader.hpp"
 #include "Pipeline.hpp"
 #include "Scene.hpp"
@@ -16,23 +17,29 @@
 
 
 int main() {
-    auto skullMesh = std::make_unique<MeshLoader>("res/models/skull.obj", "Skull");
+    // auto skullMesh = std::make_unique<MeshLoader>("res/models/skull.obj", "Skull");
 
-    auto sphereMesh = std::make_unique<MeshLoader>("res/models/sphere.obj", "Sphere");
+    // auto sphereMesh = std::make_unique<MeshLoader>("res/models/sphere.obj", "Sphere");
 
+    auto helmetMesh = std::make_unique<MeshLoader>("res/models/DamagedHelmet/DamagedHelmet.obj", "DamagedHelmet");
     auto grenadeMesh = std::make_unique<MeshLoader>("res/models/stick_grenade/stick_grenade_1k.obj", "Grenade");
 
     App app("BRDF viewer");
 
-    std::vector<std::shared_ptr<Texture>> grenadeTex;
-    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_diff_1k.jpg", TEXTURE_ALBEDO));
-    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_nor_gl_1k.jpg", TEXTURE_NORMAL_MAP));
-    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_rough_1k.jpg", TEXTURE_ROUGHNESS_MAP));
-    grenadeTex.push_back(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_metal_1k.jpg", TEXTURE_METALLIC_MAP));
+    Material helmetMaterial;
+    helmetMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/DamagedHelmet/textures/albedo.png", TEXTURE_ALBEDO));
+    helmetMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/DamagedHelmet/textures/normal.png", TEXTURE_NORMAL_MAP));
+    helmetMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/DamagedHelmet/textures/roughness.png", TEXTURE_ROUGHNESS_MAP));
+    helmetMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/DamagedHelmet/textures/metallic.png", TEXTURE_METALLIC_MAP));
+    helmetMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/DamagedHelmet/textures/emission.png", TEXTURE_EMISSION_MAP));
+    helmetMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/DamagedHelmet/textures/ambientOcclusion.png", TEXTURE_AMBIENT_OCCLUSION_MAP));
    
+    Material grenadeMaterial;
+    grenadeMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_diff_1k.jpg", TEXTURE_ALBEDO));
+    
+    
     Pipeline p = Pipeline(app.getRenderContext(), "object.vert","pbr.frag");
 
-    EnvMap env(app.getRenderContext(), "res/envmaps/rural_evening_road_4k.hdr", p.getDescriptorSetLayouts()[2]);
     
     
 
@@ -45,9 +52,10 @@ int main() {
         45.0f
     );
     Scene scene(app.getRenderContext(), &p, &camera);
-    // scene.addMesh(std::move(sphereMesh));
-    // scene.addMesh(std::move(skullMesh));
-    scene.addMesh(std::move(grenadeMesh), grenadeTex);
+    scene.addMesh(std::move(helmetMesh), helmetMaterial);
+    scene.addMesh(std::move(grenadeMesh), grenadeMaterial);
+
+    EnvMap env(app.getRenderContext(), "res/envmaps/ferndale_studio_01_4k.hdr", p.getDescriptorSetLayouts()[2]);
     scene.addEnvMap(&env);
 
     

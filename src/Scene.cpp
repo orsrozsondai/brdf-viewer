@@ -15,18 +15,17 @@
 #include "Config.hpp"
 
 Scene::Scene(const RenderContext& context, Pipeline* pPipeline, Camera* pCamera) : context(context), pipeline(pPipeline), camera(pCamera) {
-    meshes = std::vector<std::unique_ptr<MeshLoader>>();
+    meshes = std::vector<MeshAndMaterial>();
     createUniformBuffers();
     createDescriptorSets();
     updateDescriptorSets();
 }
 
-void Scene::addMesh(std::unique_ptr<MeshLoader> mesh, const std::vector<std::shared_ptr<Texture>>& textures) {
-    meshes.push_back(std::move(mesh));
+void Scene::addMesh(std::unique_ptr<MeshLoader> mesh, Material material) {
+    meshes.push_back({std::move(mesh), material});
     if (objects.empty()) createObjects();
-    for (Object* obj : objects)
-        for (auto texture : textures)
-            obj->addTexture(texture);
+    // for (Object* obj : objects)
+    //     obj->setMaterial(material);
     
 }
 
@@ -93,9 +92,9 @@ void Scene::createUniformBuffers() {
 
 void Scene::createObjects() {
     for (int i = 0; i < MAX_OBJECT_COUNT; i++) {
-        Object* obj = new Object(context, pipeline, meshes[meshIndex].get());
+        Object* obj = new Object(context, pipeline, meshes[meshIndex].first.get());
         objects.push_back(obj);
-        obj->ubo()->albedo = glm::vec3((float)(i+1) / (float)(MAX_OBJECT_COUNT+2))*0.2f;
+        obj->setMaterial(meshes[meshIndex].second);
     }
     arrangeObjects();
 }
@@ -116,7 +115,7 @@ void Scene::setMeshIndex(int index) {
 const std::vector<const char*> Scene::getMeshNames() const {
     std::vector<const char*> names(meshes.size());
     for (size_t i = 0; i < names.size(); i++) {
-        names[i] = meshes[i].get()->getName().c_str();
+        names[i] = meshes[i].first->getName().c_str();
     }
     return names;
 }
@@ -215,6 +214,12 @@ void Scene::setObjectDistance(float d) {
     selectObject(selectedObjectIndex);
 }
 
+void Scene::setObjectScale(float s) {
+    for (Object* obj : objects) {
+        obj->setScale(s);
+    }
+}
+
 void Scene::interpolateFloat(MaterialParameters param) {
     float first = *(float*)objects.front()->ubo()->get(param);
     float last = *(float*)objects[currentObjectCount-1]->ubo()->get(param);
@@ -236,7 +241,7 @@ void Scene::interpolateVec3(MaterialParameters param) {
 }
 
 void Scene::interpolate(MaterialParameters param) {
-    if (param == ALBEDO) interpolateVec3(param);
+    if (param == ALBEDO || param == EMISSION) interpolateVec3(param);
     else interpolateFloat(param);
 }
 
@@ -264,5 +269,8 @@ void Scene::destroy() {
             memory = VK_NULL_HANDLE;
         }
     }
+    for (auto& [_,material] : meshes)
+        material.destroy();
+    
     pipeline->destroy();
 }

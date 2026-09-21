@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Camera.hpp"
+#include "Material.hpp"
 #include "MeshLoader.hpp"
 #include "Pipeline.hpp"
 #include "RenderContext.hpp"
@@ -33,10 +34,10 @@ private:
     std::vector<void*> fs_uniformBuffersMapped;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    std::vector<std::shared_ptr<Texture>> textures;
 
     MVP_UBO mvpUBO;
-    MaterialUBO materialUBO;
+    // MaterialUBO materialUBO;
+    Material material;
 
     glm::vec3 position = {0,0,0};
     float scale = 1.0;
@@ -70,7 +71,7 @@ private:
     void update(const Camera& camera);
 
     MaterialUBO* ubo();
-    void addTexture(std::shared_ptr<Texture> pTexture);
+    void setMaterial(Material material);
 
     void setScale(float scale);
     void setPosition(const glm::vec3& pos);

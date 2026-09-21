@@ -3,6 +3,7 @@
 #include "Object.hpp"
 #include "RenderContext.hpp"
 #include "Scene.hpp"
+#include "UniformBufferObjects.hpp"
 #include "imgui.h"
 #include <array>
 #include <vulkan/vulkan_core.h>
@@ -16,7 +17,7 @@ private:
     Object* object;
     Scene* scene = nullptr;
     bool visible = true;
-    std::array<bool, 7> interpolatedParameters = {0,0,0,0,0,0,0};
+    std::array<bool, MATERIAL_PARAMETER_COUNT> interpolatedParameters{};
 
 
     void init();
