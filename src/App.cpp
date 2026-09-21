@@ -8,6 +8,7 @@
 #include <cstring>
 #include <glm/ext/matrix_transform.hpp>
 #include <iostream>
+#include <iterator>
 #include <ostream>
 #include <stdexcept>
 #include <sys/types.h>
@@ -25,7 +26,7 @@ void App::initInstance(const char* appName) {
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_1;
 
     uint32_t count;
     const char** extensions = glfwGetRequiredInstanceExtensions(&count);
@@ -269,7 +270,8 @@ void App::selectDevice() {
         queueInfos.push_back(q);
     }
     const char* deviceExtensions[] = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_ROBUSTNESS_2_EXTENSION_NAME
     };
 
     // sampler anisotropy
@@ -282,15 +284,35 @@ void App::selectDevice() {
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = supportedFeatures.samplerAnisotropy;
 
+    VkPhysicalDeviceRobustness2FeaturesKHR robustness2Features{};
+    robustness2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR;
+
+    VkPhysicalDeviceFeatures2 features2{};
+    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.pNext = &robustness2Features;
+
+    vkGetPhysicalDeviceFeatures2(
+        physicalDevice,
+        &features2
+    );
+
+    if (!robustness2Features.nullDescriptor) 
+        throw std::runtime_error("nullDescriptor feature is not available");
+    
+    robustness2Features.nullDescriptor = VK_TRUE;
+    robustness2Features.robustBufferAccess2 = VK_FALSE;
+    robustness2Features.robustImageAccess2 = VK_FALSE;
+
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.queueCreateInfoCount = queueInfos.size();
     createInfo.pQueueCreateInfos = queueInfos.data();
 
-    createInfo.enabledExtensionCount = 1;
+    createInfo.enabledExtensionCount = std::size(deviceExtensions);
     createInfo.ppEnabledExtensionNames = deviceExtensions;
 
     createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pNext = &robustness2Features;
 
 
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {

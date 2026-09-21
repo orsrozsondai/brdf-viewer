@@ -297,8 +297,8 @@ void Object::updateDescriptorSets() {
 
         std::vector<VkDescriptorImageInfo> imageInfos;
         std::vector<VkWriteDescriptorSet> writes;
-        writes.reserve(2 + material.textureMap().size());
-        imageInfos.reserve(material.textureMap().size());
+        writes.reserve(2 + TEXTURE_TYPE_COUNT);
+        imageInfos.reserve(TEXTURE_TYPE_COUNT);
         
         writes.push_back({
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -318,13 +318,23 @@ void Object::updateDescriptorSets() {
             .pBufferInfo = &fsBufferInfo
         });
 
-        for (auto texture : material.textureMap()) {
-            imageInfos.push_back(texture.second->descriptorInfo());
+        VkDescriptorImageInfo emptyImageInfo{};
+        emptyImageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        emptyImageInfo.sampler = VK_NULL_HANDLE;
+        emptyImageInfo.imageView = VK_NULL_HANDLE;
+
+        for (int s = 0; s < TEXTURE_TYPE_COUNT; ++s) {
+            TextureType t = static_cast<TextureType>(1 << s);
+            
+            if (material.textureMap().contains(t))
+                imageInfos.push_back(material.textureMap().at(t)->descriptorInfo());
+            else
+                imageInfos.push_back(emptyImageInfo);
 
             VkWriteDescriptorSet write{};
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.dstSet = descriptorSets[i];
-            write.dstBinding = TextureBinding(texture.first);
+            write.dstBinding = TextureBinding(t);
             write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             write.descriptorCount = 1;
             write.pImageInfo = &imageInfos.back();
