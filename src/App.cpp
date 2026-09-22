@@ -16,6 +16,7 @@
 #include <vulkan/vulkan_core.h>
 #include <algorithm>
 #include "Config.hpp"
+#include "Texture.hpp"
 #include "helpers.hpp"
 
 
@@ -867,6 +868,7 @@ void App::destroy() {
     vkDeviceWaitIdle(device);
     delete settingsWindow;
     scene->destroy();
+    Texture::freeDefaultSampler(device);
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     for (int i = 0; i < (int)imageCount; i++) {
         vkDestroySemaphore(device, imageAvailable[i], nullptr);

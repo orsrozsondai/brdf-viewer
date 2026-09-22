@@ -17,9 +17,9 @@
 
 
 int main() {
-    // auto skullMesh = std::make_unique<MeshLoader>("res/models/skull.obj", "Skull");
+    auto skullMesh = std::make_unique<MeshLoader>("res/models/skull.obj", "Skull");
 
-    // auto sphereMesh = std::make_unique<MeshLoader>("res/models/sphere.obj", "Sphere");
+    auto sphereMesh = std::make_unique<MeshLoader>("res/models/sphere.obj", "Sphere");
 
     auto helmetMesh = std::make_unique<MeshLoader>("res/models/DamagedHelmet/DamagedHelmet.obj", "DamagedHelmet");
     auto grenadeMesh = std::make_unique<MeshLoader>("res/models/stick_grenade/stick_grenade_1k.obj", "Grenade");
@@ -36,6 +36,10 @@ int main() {
    
     Material grenadeMaterial;
     grenadeMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_diff_1k.jpg", TEXTURE_ALBEDO));
+    grenadeMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_nor_gl_1k.jpg", TEXTURE_NORMAL_MAP));
+    grenadeMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_rough_1k.jpg", TEXTURE_ROUGHNESS_MAP));
+    grenadeMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_metal_1k.jpg", TEXTURE_METALLIC_MAP));
+    grenadeMaterial.addTexture(std::make_shared<Texture>(app.getRenderContext(), "res/models/stick_grenade/textures/stick_grenade_ao_1k.jpg", TEXTURE_AMBIENT_OCCLUSION_MAP));
     
     
     Pipeline p = Pipeline(app.getRenderContext(), "object.vert","pbr.frag");
@@ -54,6 +58,8 @@ int main() {
     Scene scene(app.getRenderContext(), &p, &camera);
     scene.addMesh(std::move(helmetMesh), helmetMaterial);
     scene.addMesh(std::move(grenadeMesh), grenadeMaterial);
+    scene.addMesh(std::move(skullMesh), {});
+    scene.addMesh(std::move(sphereMesh), {});
 
     EnvMap env(app.getRenderContext(), "res/envmaps/ferndale_studio_01_4k.hdr", p.getDescriptorSetLayouts()[2]);
     scene.addEnvMap(&env);

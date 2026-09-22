@@ -15,6 +15,7 @@ private:
     std::filesystem::path path;
     VkSampler sampler = VK_NULL_HANDLE;
     Type type;
+    static VkSampler defaultSampler;
 
     ImageData<stbi_uc> loadImage();
     void create();
@@ -26,4 +27,7 @@ public:
     const Type getType() const;
     VkDescriptorImageInfo descriptorInfo() const;
     void destroy();
+
+    static VkDescriptorImageInfo emptyDescriptorInfo(VkDevice device);
+    static void freeDefaultSampler(VkDevice device);
 };

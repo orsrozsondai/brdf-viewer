@@ -318,11 +318,7 @@ void Object::updateDescriptorSets() {
             .pBufferInfo = &fsBufferInfo
         });
 
-        VkDescriptorImageInfo emptyImageInfo{};
-        emptyImageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        emptyImageInfo.sampler = VK_NULL_HANDLE;
-        emptyImageInfo.imageView = VK_NULL_HANDLE;
-
+        auto emptyImageInfo = Texture::emptyDescriptorInfo(context.device);
         for (int s = 0; s < TEXTURE_TYPE_COUNT; ++s) {
             TextureType t = static_cast<TextureType>(1 << s);
             

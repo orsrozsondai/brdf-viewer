@@ -274,3 +274,26 @@ void Texture::destroy() {
         vkDestroySampler(context.device, sampler, nullptr);
     sampler = VK_NULL_HANDLE;
 }
+
+VkSampler Texture::defaultSampler = VK_NULL_HANDLE;
+
+VkDescriptorImageInfo Texture::emptyDescriptorInfo(VkDevice device) {
+    if (defaultSampler == VK_NULL_HANDLE)
+        defaultSampler = createSampler(
+            device,
+            VK_FILTER_NEAREST,
+            VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+            0
+        );  
+    VkDescriptorImageInfo info{};
+    info.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    info.imageView = VK_NULL_HANDLE;
+    info.sampler = defaultSampler;
+    return info;
+}
+
+void Texture::freeDefaultSampler(VkDevice device) {
+    if (defaultSampler == VK_NULL_HANDLE) return;
+    vkDeviceWaitIdle(device);
+    vkDestroySampler(device, defaultSampler, nullptr);
+}
